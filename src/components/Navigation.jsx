@@ -53,21 +53,28 @@ export const NAVIGATION = [
     segment: 'RH',
     title: 'RH',
     icon: <PeopleIcon />,
+    
     children: [
+      {
+        segment: 'Dashboard',
+        title: 'Dashboard',
+        icon: <AccountCircleIcon />,
+        path: '/rh/dashboard',  
+      },
       {
         segment: 'Personel',
         title: 'Personnel',
         icon: <AccountCircleIcon />,
-        path: '/rh/personnel',  
+        path: '/rh/Personel',  
       },
       {
-        segment: 'Conges et Absences',
+        segment: 'Conges',
         title: 'Conges et Absences',
         icon: <CalendarMonthIcon />,
         path: '/rh/conges',  
       },
       {
-        segment: 'Taches et Missions',
+        segment: 'Taches ',
         title: 'Taches et Missions',
         icon: <HomeRepairServiceIcon />,
         path: '/rh/taches',  
@@ -76,7 +83,7 @@ export const NAVIGATION = [
         segment: 'Rapports',
         title: 'Rapports',
         icon: <DescriptionIcon />,
-        path: '/rh/rapports',  
+        path: '/rh/Rapport',  
       },
     ],
   },
