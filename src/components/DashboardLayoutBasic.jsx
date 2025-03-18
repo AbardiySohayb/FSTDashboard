@@ -51,7 +51,7 @@ export default function DashboardLayoutBasic(props) {
       navigation={NAVIGATION} 
       theme={demoTheme} 
       window={demoWindow}  
-      branding={{ title: 'FST Dashboard' , logo: <div style={{ display: 'none' }} />}}
+      branding={{ title: 'FST Dashboard' , logo: <div style={{  display: 'none' , color:'#B36B39' }} />}}
       authentication={authentication} 
       session={session}
     >

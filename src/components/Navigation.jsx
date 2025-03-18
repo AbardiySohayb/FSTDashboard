@@ -11,6 +11,7 @@ import ShoppingBasketIcon from '@mui/icons-material/ShoppingBasket';
 import PeopleIcon from '@mui/icons-material/People';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import HomeRepairServiceIcon from '@mui/icons-material/HomeRepairService';
+import DashboardIcon from '@mui/icons-material/Dashboard';
 
 export const NAVIGATION = [
   {
@@ -58,7 +59,7 @@ export const NAVIGATION = [
       {
         segment: 'Dashboard',
         title: 'Dashboard',
-        icon: <AccountCircleIcon />,
+        icon: <DashboardIcon />,
         path: '/rh/dashboard',  
       },
       {
@@ -86,6 +87,12 @@ export const NAVIGATION = [
         path: '/rh/Rapport',  
       },
     ],
+  },
+  {
+    segment: 'charte_graphique',
+    title: 'Charte Graphique',
+    icon: <AssignmentIcon />,
+    path: '/charte_graphique', 
   },
 ];
 
