@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useMemo } from "react"
 import {
   Box,
   Button,
@@ -11,405 +11,78 @@ import {
   TableHead,
   TableRow,
   Paper,
-  TextField,
-  Select,
-  MenuItem,
   IconButton,
   Menu,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  FormControl,
-  InputLabel,
-  Grid,
-  Chip,
+  MenuItem,
   Typography,
   Avatar,
-  Divider,
-  Tab,
-  Tabs,
-  ThemeProvider,
-  createTheme,
-  CssBaseline,
-  InputAdornment,
+  Chip,
   alpha,
-  styled,
+  ThemeProvider,
+  CssBaseline,
+  Tooltip,
+  Zoom,
+  Fade,
+  useMediaQuery,
+  useTheme,
+  Card,
+  CardContent,
+  Grid,
+  Pagination,
+  Select,
+  FormControl,
+  InputLabel,
 } from "@mui/material"
+
 import {
-  Add,
   MoreVert,
   Edit,
   Delete,
   Visibility,
-  Search,
-  FilterList,
-  School,
-  Work,
-  CalendarMonth,
-  Phone,
-  Email,
-  LocationOn,
-  Badge,
-  EventAvailable,
-  Person,
-  Assignment,
+  FilterAlt,
+  PersonAdd,
+  Download,
+  Upload,
+  Print,
+  KeyboardArrowUp,
+  KeyboardArrowDown,
 } from "@mui/icons-material"
 
-// Définition des couleurs principales selon la charte graphique
-const primaryColor = "#B36B39" // Couleur bronze/cuivre du logo
-const secondaryColor = "#2C3E50" // Bleu foncé pour le contraste
-const backgroundColor = "#F5F5F5" // Gris clair pour le fond
-const accentColor = "#E74C3C" // Rouge pour l'accent
+import { FixedSizeList as List } from "react-window"
+import AutoSizer from "react-virtualized-auto-sizer"
 
-// Création du thème
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: primaryColor,
-      contrastText: "#ffffff",
-    },
-    secondary: {
-      main: secondaryColor,
-      contrastText: "#ffffff",
-    },
-    background: {
-      default: backgroundColor,
-      paper: "#ffffff",
-    },
-    error: {
-      main: accentColor,
-    },
-    success: {
-      main: "#2ECC71",
-    },
-  },
-  typography: {
-    fontFamily: '"Roboto", "Arial", sans-serif',
-    h1: {
-      fontSize: "2.5rem",
-      fontWeight: 700,
-      color: secondaryColor,
-    },
-    h2: {
-      fontSize: "2rem",
-      fontWeight: 600,
-      color: primaryColor,
-    },
-    h4: {
-      fontSize: "1.5rem",
-      fontWeight: 600,
-      color: secondaryColor,
-    },
-    h5: {
-      fontSize: "1.2rem",
-      fontWeight: 600,
-      color: secondaryColor,
-    },
-    body1: {
-      fontSize: "1rem",
-      color: "#333",
-    },
-    subtitle1: {
-      color: primaryColor,
-      fontWeight: 500,
-    },
-    subtitle2: {
-      color: secondaryColor,
-      fontWeight: 600,
-      textTransform: "uppercase",
-      letterSpacing: "0.5px",
-      marginTop: "16px",
-    },
-  },
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: 30,
-          textTransform: "none",
-          padding: "10px 20px",
-          transition: "all 0.3s ease",
-          fontWeight: 600,
-          boxShadow: "none",
-          "&:hover": {
-            transform: "translateY(-3px)",
-            boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-          },
-        },
-        containedPrimary: {
-          background: `linear-gradient(45deg, ${primaryColor} 30%, ${primaryColor}CC 90%)`,
-          "&:hover": {
-            background: `linear-gradient(45deg, ${primaryColor}CC 30%, ${primaryColor} 90%)`,
-          },
-        },
-        containedSecondary: {
-          background: `linear-gradient(45deg, ${secondaryColor} 30%, ${secondaryColor}CC 90%)`,
-          "&:hover": {
-            background: `linear-gradient(45deg, ${secondaryColor}CC 30%, ${secondaryColor} 90%)`,
-          },
-        },
-        outlined: {
-          borderWidth: 2,
-          "&:hover": {
-            borderWidth: 2,
-          },
-        },
-      },
-    },
-    MuiTableHead: {
-      styleOverrides: {
-        root: {
-          backgroundColor: alpha(secondaryColor, 0.05),
-          "& .MuiTableCell-head": {
-            color: secondaryColor,
-            fontWeight: 600,
-          },
-        },
-      },
-    },
-    MuiTableRow: {
-      styleOverrides: {
-        root: {
-          "&:hover": {
-            backgroundColor: alpha(primaryColor, 0.05),
-          },
-        },
-      },
-    },
-    MuiDialog: {
-      styleOverrides: {
-        paper: {
-          borderRadius: 16,
-          boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
-        },
-      },
-    },
-    MuiDialogTitle: {
-      styleOverrides: {
-        root: {
-          backgroundColor: alpha(primaryColor, 0.1),
-          color: secondaryColor,
-          padding: "16px 24px",
-        },
-      },
-    },
-    MuiChip: {
-      styleOverrides: {
-        root: {
-          borderRadius: 16,
-        },
-        colorPrimary: {
-          backgroundColor: alpha(primaryColor, 0.1),
-          color: primaryColor,
-          fontWeight: 500,
-        },
-        colorSuccess: {
-          backgroundColor: alpha("#2ECC71", 0.1),
-          color: "#2ECC71",
-        },
-      },
-    },
-    MuiTextField: {
-      styleOverrides: {
-        root: {
-          "& .MuiOutlinedInput-root": {
-            "&:hover fieldset": {
-              borderColor: primaryColor,
-            },
-            "&.Mui-focused fieldset": {
-              borderColor: primaryColor,
-            },
-          },
-          "& .MuiInputLabel-root.Mui-focused": {
-            color: primaryColor,
-          },
-        },
-      },
-    },
-    MuiFormControl: {
-      styleOverrides: {
-        root: {
-          "& .MuiOutlinedInput-root": {
-            "&:hover fieldset": {
-              borderColor: primaryColor,
-            },
-            "&.Mui-focused fieldset": {
-              borderColor: primaryColor,
-            },
-          },
-          "& .MuiInputLabel-root.Mui-focused": {
-            color: primaryColor,
-          },
-        },
-      },
-    },
-  },
-})
+import { StyledSearchBox } from "../../components/styled/StyledComponents"
+import theme, { primaryColor, secondaryColor } from "../../utils/theme"
+import { employees, departments, echelons } from "../../data/mockData"
+import { filterEmployees, getGradeColor } from "../../utils/employeeUtils"
+import EmployeeDetailsDialog from "../../components/dialogs/EmployeeDetailsDialog"
+import EmployeeFormDialog from "../../components/dialogs/EmployeeFormDialog"
+import FilterPanel from "./FilterPanel"
 
-// Composants stylisés
-const StyledSearchBox = styled(Box)(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
-  backgroundColor: "#fff",
-  borderRadius: 30,
-  padding: "4px 16px",
-  boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-  flex: 1,
-}))
-
-const StyledAvatar = styled(Avatar)(({ theme }) => ({
-  width: 150,
-  height: 150,
-  border: `4px solid ${alpha(primaryColor, 0.2)}`,
-  boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-}))
-
-const InfoItem = styled(Box)(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
-  marginBottom: 8,
-  "& .MuiSvgIcon-root": {
-    color: primaryColor,
-    marginRight: 8,
-  },
-}))
-
-const TabPanel = (props) => {
-  const { children, value, index, ...other } = props
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`employee-tabpanel-${index}`}
-      aria-labelledby={`employee-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  )
-}
-
-// Données d'exemple basées sur la structure UML
-const employees = [
-  {
-    id: 1,
-    nom: "Alami",
-    prenom: "Mohammed",
-    dateNaissance: "1975-05-15",
-    adresse: "123 Rue Hassan II, Casablanca",
-    telephone: "0661234567",
-    email: "m.alami@fstm.ac.ma",
-    departement: "Informatique",
-    poste: "Professeur",
-    dateDeRecrutement: "2010-09-01",
-    dateDeGrade: "2018-01-15",
-    AncienneteEchelon: "2018-01-15",
-    typeContrat: "Permanent",
-    statut: "Actif",
-    photo: "/placeholder.svg?height=100&width=100",
-    diplomes: ["Doctorat en Informatique", "Master en Réseaux"],
-    competences: ["Java", "Réseaux", "Sécurité informatique"],
-    soldeConges: { annuel: 30, maladie: 15 },
-    historiqueConges: [],
-  },
-  {
-    id: 2,
-    nom: "Zohra",
-    prenom: "Fatima",
-    dateNaissance: "1980-03-22",
-    adresse: "45 Avenue Mohammed V, Rabat",
-    telephone: "0662345678",
-    email: "f.zohra@fstm.ac.ma",
-    departement: "Mathématiques",
-    poste: "Maître de conférences",
-    dateDeRecrutement: "2012-09-01",
-    dateDeGrade: "2017-06-10",
-    AncienneteEchelon: "2017-06-10",
-    typeContrat: "Permanent",
-    statut: "Actif",
-    photo: "/placeholder.svg?height=100&width=100",
-    diplomes: ["Doctorat en Mathématiques", "Master en Algèbre"],
-    competences: ["Analyse", "Algèbre", "Statistiques"],
-    soldeConges: { annuel: 30, maladie: 15 },
-    historiqueConges: [],
-  },
-  {
-    id: 3,
-    nom: "Benali",
-    prenom: "Youssef",
-    dateNaissance: "1985-11-10",
-    adresse: "78 Boulevard Anfa, Casablanca",
-    telephone: "0663456789",
-    email: "y.benali@fstm.ac.ma",
-    departement: "Physique",
-    poste: "Technicien de labo",
-    dateDeRecrutement: "2015-02-15",
-    dateDeGrade: "2019-02-15",
-    AncienneteEchelon: "2019-02-15",
-    typeContrat: "CDD",
-    statut: "Actif",
-    photo: "/placeholder.svg?height=100&width=100",
-    diplomes: ["Licence en Physique", "DUT en Instrumentation"],
-    competences: ["Instrumentation", "Maintenance", "Électronique"],
-    soldeConges: { annuel: 25, maladie: 10 },
-    historiqueConges: [],
-  },
-  {
-    id: 4,
-    nom: "Tazi",
-    prenom: "Amina",
-    dateNaissance: "1990-07-25",
-    adresse: "12 Rue Ibn Sina, Marrakech",
-    telephone: "0664567890",
-    email: "a.tazi@fstm.ac.ma",
-    departement: "Chimie",
-    poste: "Assistante administrative",
-    dateDeRecrutement: "2018-05-01",
-    dateDeGrade: "2021-05-01",
-    AncienneteEchelon: "2021-05-01",
-    typeContrat: "Permanent",
-    statut: "Actif",
-    photo: "/placeholder.svg?height=100&width=100",
-    diplomes: ["Licence en Administration", "BTS Secrétariat"],
-    competences: ["Word", "Excel", "Gestion administrative"],
-    soldeConges: { annuel: 30, maladie: 15 },
-    historiqueConges: [],
-  },
-  {
-    id: 5,
-    nom: "Idrissi",
-    prenom: "Karim",
-    dateNaissance: "1982-12-03",
-    adresse: "56 Avenue des FAR, Tanger",
-    telephone: "0665678901",
-    email: "k.idrissi@fstm.ac.ma",
-    departement: "Biologie",
-    poste: "Chercheur",
-    dateDeRecrutement: "2014-10-01",
-    dateDeGrade: "2020-01-15",
-    AncienneteEchelon: "2020-01-15",
-    typeContrat: "Permanent",
-    statut: "Actif",
-    photo: "/placeholder.svg?height=100&width=100",
-    diplomes: ["Doctorat en Biologie", "Master en Microbiologie"],
-    competences: ["Microbiologie", "Biochimie", "PCR"],
-    soldeConges: { annuel: 30, maladie: 15 },
-    historiqueConges: [],
-  },
-]
-
-// Liste des départements pour le filtre
-const departments = ["Informatique", "Mathématiques", "Physique", "Chimie", "Biologie"]
 
 const EmployeeTable = () => {
   const [anchorEl, setAnchorEl] = useState(null)
   const [selectedEmployee, setSelectedEmployee] = useState(null)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [departmentFilter, setDepartmentFilter] = useState("")
+  const [filters, setFilters] = useState({
+    searchTerm: "",
+    department: "",
+    categorie: "",
+    grade: "",
+    echelon: "",
+    poste: "",
+    statut: "",
+  })
   const [openDialog, setOpenDialog] = useState(false)
   const [openDetailsDialog, setOpenDetailsDialog] = useState(false)
-  const [tabValue, setTabValue] = useState(0)
+  const muiTheme = useTheme()
+  const isMobile = useMediaQuery(muiTheme.breakpoints.down("sm"))
+  const isTablet = useMediaQuery(muiTheme.breakpoints.down("md"))
+
+  // Pagination state
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(10)
+  const [viewMode, setViewMode] = useState("pagination") // "pagination" or "virtualization"
+  const [sortConfig, setSortConfig] = useState({ key: "id", direction: "asc" })
 
   const handleMenuOpen = (event, employee) => {
     setAnchorEl(event.currentTarget)
@@ -448,163 +121,667 @@ const EmployeeTable = () => {
     handleMenuClose()
   }
 
-  const handleSearchChange = (event) => {
-    setSearchTerm(event.target.value)
+  const handleFilterChange = (newFilters) => {
+    setFilters(newFilters)
+    setPage(0) // Reset to first page when filters change
   }
 
-  const handleDepartmentChange = (event) => {
-    setDepartmentFilter(event.target.value)
+  const handleClearFilters = () => {
+    setFilters({
+      searchTerm: "",
+      department: "",
+      categorie: "",
+      grade: "",
+      echelon: "",
+      poste: "",
+      statut: "",
+    })
+    setPage(0) // Reset to first page when filters are cleared
   }
 
-  const handleTabChange = (event, newValue) => {
-    setTabValue(newValue)
+  // Pagination handlers
+  const handleChangePage = (event, newPage) => {
+    setPage(newPage)
   }
 
-  // Filtrer les employés en fonction de la recherche et du département
-  const filteredEmployees = employees.filter((emp) => {
-    const matchesSearch =
-      emp.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.prenom.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      emp.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const handleChangeRowsPerPage = (event) => {
+    setRowsPerPage(Number.parseInt(event.target.value, 10))
+    setPage(0)
+  }
 
-    const matchesDepartment = departmentFilter === "" || emp.departement === departmentFilter
+  const handleViewModeChange = (event) => {
+    setViewMode(event.target.value)
+  }
 
-    return matchesSearch && matchesDepartment
-  })
+  // Sorting handler
+  const requestSort = (key) => {
+    let direction = "asc"
+    if (sortConfig.key === key && sortConfig.direction === "asc") {
+      direction = "desc"
+    }
+    setSortConfig({ key, direction })
+  }
+
+  // Filter and sort employees
+  const filteredEmployees = useMemo(() => {
+    let result = filterEmployees(employees, filters)
+
+    // Apply sorting
+    if (sortConfig.key) {
+      result = [...result].sort((a, b) => {
+        if (a[sortConfig.key] < b[sortConfig.key]) {
+          return sortConfig.direction === "asc" ? -1 : 1
+        }
+        if (a[sortConfig.key] > b[sortConfig.key]) {
+          return sortConfig.direction === "asc" ? 1 : -1
+        }
+        return 0
+      })
+    }
+
+    return result
+  }, [filters, sortConfig])
+
+  // Get current page data for pagination
+  const paginatedEmployees = useMemo(() => {
+    return filteredEmployees.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+  }, [filteredEmployees, page, rowsPerPage])
+
+  // Virtualized row renderer
+  const RowRenderer = ({ index, style }) => {
+    const emp = filteredEmployees[index]
+    return (
+      <TableRow
+        key={emp.id}
+        style={{
+          ...style,
+          display: "flex",
+          alignItems: "center",
+          width: "100%",
+          boxSizing: "border-box",
+        }}
+        sx={{
+          transition: "all 0.2s ease",
+          "&:hover": {
+            backgroundColor: alpha(primaryColor, 0.05),
+          },
+        }}
+      >
+        <TableCell style={{ flex: "0 0 50px" }}>{emp.id}</TableCell>
+        <TableCell style={{ flex: "0 0 200px" }}>
+          <Box sx={{ display: "flex", alignItems: "center" }}>
+            <Avatar
+              src={emp.photo}
+              alt={`${emp.prenom} ${emp.nom}`}
+              sx={{
+                mr: 2,
+                border: `2px solid ${alpha(primaryColor, 0.2)}`,
+                transition: "all 0.3s ease",
+                "&:hover": {
+                  transform: "scale(1.1)",
+                  boxShadow: `0 4px 8px ${alpha(primaryColor, 0.3)}`,
+                },
+              }}
+            />
+            <Typography variant="subtitle1">
+              {emp.prenom} {emp.nom}
+            </Typography>
+          </Box>
+        </TableCell>
+        <TableCell style={{ flex: "0 0 200px" }}>{emp.email}</TableCell>
+        <TableCell style={{ flex: "0 0 150px", display: isTablet ? "none" : "table-cell" }}>{emp.telephone}</TableCell>
+        <TableCell style={{ flex: "0 0 150px", display: isTablet ? "none" : "table-cell" }}>
+          {emp.departement}
+        </TableCell>
+        <TableCell style={{ flex: "0 0 150px", display: isTablet ? "none" : "table-cell" }}>{emp.poste}</TableCell>
+        <TableCell style={{ flex: "0 0 150px" }}>
+          <Chip
+            label={emp.niveauGrade}
+            sx={{
+              backgroundColor: alpha(getGradeColor(emp.niveauGrade), 0.1),
+              color: getGradeColor(emp.niveauGrade),
+            }}
+            size="small"
+          />
+        </TableCell>
+        <TableCell style={{ flex: "0 0 100px" }}>
+          <Chip label={`Échelon ${emp.echelon}`} color="primary" size="small" />
+        </TableCell>
+        <TableCell style={{ flex: "0 0 100px" }}>
+          <Chip label={emp.statut} color={emp.statut === "Actif" ? "success" : "default"} size="small" />
+        </TableCell>
+        <TableCell style={{ flex: "0 0 80px" }} align="center">
+          <Tooltip title="Actions" arrow TransitionComponent={Zoom}>
+            <IconButton
+              onClick={(event) => handleMenuOpen(event, emp)}
+              sx={{
+                color: secondaryColor,
+                transition: "all 0.2s ease",
+                "&:hover": {
+                  backgroundColor: alpha(secondaryColor, 0.1),
+                  transform: "scale(1.1)",
+                },
+              }}
+            >
+              <MoreVert />
+            </IconButton>
+          </Tooltip>
+        </TableCell>
+      </TableRow>
+    )
+  }
+
+  // Table header with sorting
+  const SortableTableHead = ({ columns }) => {
+    return (
+      <TableHead>
+        <TableRow>
+          {columns.map((column) => (
+            <TableCell
+              key={column.id}
+              sx={{
+                ...column.sx,
+                cursor: column.sortable ? "pointer" : "default",
+                "&:hover": column.sortable ? { backgroundColor: alpha(primaryColor, 0.1) } : {},
+              }}
+              onClick={() => column.sortable && requestSort(column.id)}
+            >
+              <Box sx={{ display: "flex", alignItems: "center" }}>
+                {column.label}
+                {column.sortable &&
+                  sortConfig.key === column.id &&
+                  (sortConfig.direction === "asc" ? (
+                    <KeyboardArrowUp fontSize="small" />
+                  ) : (
+                    <KeyboardArrowDown fontSize="small" />
+                  ))}
+              </Box>
+            </TableCell>
+          ))}
+        </TableRow>
+      </TableHead>
+    )
+  }
+
+  // Define table columns
+  const tableColumns = [
+    { id: "id", label: "ID", sortable: true },
+    { id: "nom", label: "Nom complet", sortable: true },
+    { id: "email", label: "Email", sortable: true },
+    { id: "telephone", label: "Téléphone", sortable: true, sx: { display: { xs: "none", md: "table-cell" } } },
+    { id: "departement", label: "Département", sortable: true, sx: { display: { xs: "none", md: "table-cell" } } },
+    { id: "poste", label: "Poste", sortable: true, sx: { display: { xs: "none", lg: "table-cell" } } },
+    { id: "categorie", label: "Catégorie", sortable: true, sx: { display: { xs: "none", lg: "table-cell" } } },
+    { id: "niveauGrade", label: "Niveau de Grade", sortable: true },
+    { id: "echelon", label: "Échelon", sortable: true },
+    { id: "statut", label: "Statut", sortable: true },
+    { id: "actions", label: "Actions", sortable: false, align: "center" },
+  ]
 
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box sx={{ p: 4, backgroundColor: backgroundColor, minHeight: "100vh" }}>
-        {/* Titre */}
-        <Typography variant="h1" gutterBottom>
-          Gestion du Personnel
-        </Typography>
-
-        {/* Barre de recherche + Sélecteur + Bouton Ajouter */}
+      <Box sx={{ p: { xs: 2, md: 4 }, backgroundColor: "background.default", minHeight: "100vh" }}>
+        {/* En-tête avec titre et actions */}
         <Box
-          display="flex"
-          gap={2}
           sx={{
-            mb: 4,
+            display: "flex",
             flexDirection: { xs: "column", md: "row" },
-            alignItems: { xs: "stretch", md: "center" },
+            justifyContent: "space-between",
+            alignItems: { xs: "flex-start", md: "center" },
+            mb: 4,
+            gap: 2,
           }}
         >
-          <StyledSearchBox>
-            <Search sx={{ color: alpha(secondaryColor, 0.5), mr: 1 }} />
-            <TextField
-              variant="standard"
-              placeholder="Rechercher un employé..."
-              value={searchTerm}
-              onChange={handleSearchChange}
-              fullWidth
-              InputProps={{
-                disableUnderline: true,
-              }}
-            />
-          </StyledSearchBox>
-
-          <FormControl sx={{ minWidth: { xs: "100%", md: 200 } }}>
-            <InputLabel id="department-select-label">Département</InputLabel>
-            <Select
-              labelId="department-select-label"
-              value={departmentFilter}
-              onChange={handleDepartmentChange}
-              displayEmpty
-              label="Département"
-              startAdornment={
-                <InputAdornment position="start">
-                  <FilterList sx={{ color: alpha(secondaryColor, 0.5) }} />
-                </InputAdornment>
-              }
-            >
-              <MenuItem value="">Tous les départements</MenuItem>
-              {departments.map((dept) => (
-                <MenuItem key={dept} value={dept}>
-                  {dept}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-
-          <Button
-            variant="contained"
-            color="primary"
-            startIcon={<Add />}
-            onClick={handleOpenAddDialog}
-            sx={{ minWidth: { xs: "100%", md: "auto" } }}
+          <Typography
+            variant="h1"
+            sx={{
+              fontSize: { xs: "2rem", md: "2.5rem" },
+              position: "relative",
+              "&:after": {
+                content: '""',
+                position: "absolute",
+                bottom: -8,
+                left: 0,
+                width: "60px",
+                height: "4px",
+                backgroundColor: primaryColor,
+                borderRadius: "2px",
+              },
+            }}
           >
-            Ajouter un employé
-          </Button>
+            Gestion du Personnel
+          </Typography>
+
+          <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+            <Tooltip title="Exporter les données" arrow TransitionComponent={Zoom}>
+              <Button
+                variant="outlined"
+                color="secondary"
+                startIcon={<Download />}
+                sx={{
+                  borderRadius: "20px",
+                  transition: "all 0.2s ease",
+                  "&:hover": {
+                    transform: "translateY(-2px)",
+                    boxShadow: `0 4px 8px ${alpha(secondaryColor, 0.2)}`,
+                  },
+                }}
+              >
+                Exporter
+              </Button>
+            </Tooltip>
+
+            <Tooltip title="Importer des données" arrow TransitionComponent={Zoom}>
+              <Button
+                variant="outlined"
+                color="secondary"
+                startIcon={<Upload />}
+                sx={{
+                  borderRadius: "20px",
+                  transition: "all 0.2s ease",
+                  "&:hover": {
+                    transform: "translateY(-2px)",
+                    boxShadow: `0 4px 8px ${alpha(secondaryColor, 0.2)}`,
+                  },
+                }}
+              >
+                Importer
+              </Button>
+            </Tooltip>
+
+            <Tooltip title="Ajouter un nouvel employé" arrow TransitionComponent={Zoom}>
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<PersonAdd />}
+                onClick={handleOpenAddDialog}
+                sx={{
+                  borderRadius: "20px",
+                  transition: "all 0.2s ease",
+                  boxShadow: `0 4px 12px ${alpha(primaryColor, 0.3)}`,
+                  "&:hover": {
+                    transform: "translateY(-2px)",
+                    boxShadow: `0 6px 16px ${alpha(primaryColor, 0.4)}`,
+                  },
+                }}
+              >
+                Ajouter
+              </Button>
+            </Tooltip>
+          </Box>
         </Box>
 
+        {/* Statistiques rapides */}
+        <Grid container spacing={3} sx={{ mb: 4 }}>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card
+              elevation={0}
+              sx={{
+                borderRadius: 4,
+                background: `linear-gradient(135deg, ${alpha(primaryColor, 0.1)} 0%, ${alpha(primaryColor, 0.2)} 100%)`,
+                border: `1px solid ${alpha(primaryColor, 0.2)}`,
+                transition: "all 0.3s ease",
+                "&:hover": {
+                  transform: "translateY(-5px)",
+                  boxShadow: `0 8px 20px ${alpha(primaryColor, 0.2)}`,
+                },
+              }}
+            >
+              <CardContent sx={{ p: 3 }}>
+                <Typography variant="h4" component="div" sx={{ mb: 1, color: primaryColor }}>
+                  {employees.length}
+                </Typography>
+                <Typography variant="body2" sx={{ color: alpha(secondaryColor, 0.8) }}>
+                  Employés au total
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card
+              elevation={0}
+              sx={{
+                borderRadius: 4,
+                background: `linear-gradient(135deg, ${alpha(secondaryColor, 0.1)} 0%, ${alpha(
+                  secondaryColor,
+                  0.2,
+                )} 100%)`,
+                border: `1px solid ${alpha(secondaryColor, 0.2)}`,
+                transition: "all 0.3s ease",
+                "&:hover": {
+                  transform: "translateY(-5px)",
+                  boxShadow: `0 8px 20px ${alpha(secondaryColor, 0.2)}`,
+                },
+              }}
+            >
+              <CardContent sx={{ p: 3 }}>
+                <Typography variant="h4" component="div" sx={{ mb: 1, color: secondaryColor }}>
+                  {employees.filter((e) => e.statut === "Actif").length}
+                </Typography>
+                <Typography variant="body2" sx={{ color: alpha(secondaryColor, 0.8) }}>
+                  Employés actifs
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card
+              elevation={0}
+              sx={{
+                borderRadius: 4,
+                background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.1)} 0%, ${alpha(
+                  theme.palette.success.main,
+                  0.2,
+                )} 100%)`,
+                border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
+                transition: "all 0.3s ease",
+                "&:hover": {
+                  transform: "translateY(-5px)",
+                  boxShadow: `0 8px 20px ${alpha(theme.palette.success.main, 0.2)}`,
+                },
+              }}
+            >
+              <CardContent sx={{ p: 3 }}>
+                <Typography variant="h4" component="div" sx={{ mb: 1, color: theme.palette.success.main }}>
+                  {employees.filter((e) => e.categorie === "Enseignant-Chercheur").length}
+                </Typography>
+                <Typography variant="body2" sx={{ color: alpha(secondaryColor, 0.8) }}>
+                  Enseignants-Chercheurs
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card
+              elevation={0}
+              sx={{
+                borderRadius: 4,
+                background: `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.1)} 0%, ${alpha(
+                  theme.palette.error.main,
+                  0.2,
+                )} 100%)`,
+                border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
+                transition: "all 0.3s ease",
+                "&:hover": {
+                  transform: "translateY(-5px)",
+                  boxShadow: `0 8px 20px ${alpha(theme.palette.error.main, 0.2)}`,
+                },
+              }}
+            >
+              <CardContent sx={{ p: 3 }}>
+                <Typography variant="h4" component="div" sx={{ mb: 1, color: theme.palette.error.main }}>
+                  {employees.filter((e) => e.statut !== "Actif").length}
+                </Typography>
+                <Typography variant="body2" sx={{ color: alpha(secondaryColor, 0.8) }}>
+                  Employés en congé/suspendus
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
+        {/* Panneau de filtres */}
+        <FilterPanel onFilterChange={handleFilterChange} filters={filters} onClearFilters={handleClearFilters} />
+
         {/* Tableau des employés */}
-        <Paper elevation={2} sx={{ borderRadius: 4, overflow: "hidden", mb: 4 }}>
-          <TableContainer>
-            <Table>
-              <TableHead>
-                <TableRow>
-                  <TableCell>ID</TableCell>
-                  <TableCell>Nom complet</TableCell>
-                  <TableCell>Email</TableCell>
-                  <TableCell>Téléphone</TableCell>
-                  <TableCell>Département</TableCell>
-                  <TableCell>Poste</TableCell>
-                  <TableCell>Type de contrat</TableCell>
-                  <TableCell>Statut</TableCell>
-                  <TableCell align="center">Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {filteredEmployees.map((emp) => (
-                  <TableRow key={emp.id}>
-                    <TableCell>{emp.id}</TableCell>
-                    <TableCell>
-                      <Box sx={{ display: "flex", alignItems: "center" }}>
-                        <Avatar
-                          src={emp.photo}
-                          alt={`${emp.prenom} ${emp.nom}`}
-                          sx={{ mr: 2, border: `2px solid ${alpha(primaryColor, 0.2)}` }}
-                        />
-                        <Typography variant="subtitle1">
-                          {emp.prenom} {emp.nom}
-                        </Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell>{emp.email}</TableCell>
-                    <TableCell>{emp.telephone}</TableCell>
-                    <TableCell>{emp.departement}</TableCell>
-                    <TableCell>{emp.poste}</TableCell>
-                    <TableCell>
-                      <Chip
-                        label={emp.typeContrat}
-                        color={emp.typeContrat === "Permanent" ? "primary" : "default"}
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      <Chip label={emp.statut} color={emp.statut === "Actif" ? "success" : "default"} size="small" />
-                    </TableCell>
-                    <TableCell align="center">
-                      <IconButton
-                        onClick={(event) => handleMenuOpen(event, emp)}
-                        sx={{
-                          color: secondaryColor,
-                          "&:hover": {
-                            backgroundColor: alpha(secondaryColor, 0.1),
-                            transform: "scale(1.1)",
-                          },
-                        }}
-                      >
-                        <MoreVert />
-                      </IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+        <Paper
+          elevation={3}
+          sx={{
+            borderRadius: 4,
+            overflow: "hidden",
+            mb: 4,
+            transition: "all 0.3s ease",
+            "&:hover": {
+              boxShadow: `0 8px 24px ${alpha(primaryColor, 0.15)}`,
+            },
+          }}
+        >
+          <Box
+            sx={{
+              p: 2,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              borderBottom: `1px solid ${alpha(primaryColor, 0.1)}`,
+              backgroundColor: alpha(primaryColor, 0.05),
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <FilterAlt color="primary" fontSize="small" />
+              <Typography variant="subtitle1" color="primary" fontWeight="600">
+                {filteredEmployees.length} employés trouvés
+              </Typography>
+            </Box>
+            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+              <FormControl size="small" sx={{ minWidth: 150 }}>
+                <InputLabel id="view-mode-label">Mode d'affichage</InputLabel>
+                <Select
+                  labelId="view-mode-label"
+                  id="view-mode-select"
+                  value={viewMode}
+                  label="Mode d'affichage"
+                  onChange={handleViewModeChange}
+                >
+                  <MenuItem value="pagination">Pagination</MenuItem>
+                  <MenuItem value="virtualization">Virtualisation</MenuItem>
+                </Select>
+              </FormControl>
+              <Tooltip title="Imprimer la liste" arrow TransitionComponent={Zoom}>
+                <IconButton
+                  color="primary"
+                  sx={{
+                    "&:hover": {
+                      backgroundColor: alpha(primaryColor, 0.1),
+                    },
+                  }}
+                >
+                  <Print />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          </Box>
+
+          {viewMode === "pagination" ? (
+            // Pagination mode
+            <>
+              <TableContainer>
+                <Table>
+                  <SortableTableHead columns={tableColumns} />
+                  <TableBody>
+                    {paginatedEmployees.length > 0 ? (
+                      paginatedEmployees.map((emp) => (
+                        <TableRow
+                          key={emp.id}
+                          sx={{
+                            transition: "all 0.2s ease",
+                            "&:hover": {
+                              backgroundColor: alpha(primaryColor, 0.05),
+                              transform: "scale(1.005)",
+                            },
+                          }}
+                        >
+                          <TableCell>{emp.id}</TableCell>
+                          <TableCell>
+                            <Box sx={{ display: "flex", alignItems: "center" }}>
+                              <Avatar
+                                src={emp.photo}
+                                alt={`${emp.prenom} ${emp.nom}`}
+                                sx={{
+                                  mr: 2,
+                                  border: `2px solid ${alpha(primaryColor, 0.2)}`,
+                                  transition: "all 0.3s ease",
+                                  "&:hover": {
+                                    transform: "scale(1.1)",
+                                    boxShadow: `0 4px 8px ${alpha(primaryColor, 0.3)}`,
+                                  },
+                                }}
+                              />
+                              <Typography variant="subtitle1">
+                                {emp.prenom} {emp.nom}
+                              </Typography>
+                            </Box>
+                          </TableCell>
+                          <TableCell>{emp.email}</TableCell>
+                          <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>{emp.telephone}</TableCell>
+                          <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>{emp.departement}</TableCell>
+                          <TableCell sx={{ display: { xs: "none", lg: "table-cell" } }}>{emp.poste}</TableCell>
+                          <TableCell sx={{ display: { xs: "none", lg: "table-cell" } }}>
+                            <Chip
+                              label={emp.categorie}
+                              color="secondary"
+                              size="small"
+                              sx={{
+                                transition: "all 0.2s ease",
+                                "&:hover": {
+                                  transform: "translateY(-2px)",
+                                  boxShadow: `0 2px 4px ${alpha(secondaryColor, 0.3)}`,
+                                },
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={emp.niveauGrade}
+                              sx={{
+                                backgroundColor: alpha(getGradeColor(emp.niveauGrade), 0.1),
+                                color: getGradeColor(emp.niveauGrade),
+                                transition: "all 0.2s ease",
+                                "&:hover": {
+                                  transform: "translateY(-2px)",
+                                  boxShadow: `0 2px 4px ${alpha(getGradeColor(emp.niveauGrade), 0.3)}`,
+                                },
+                              }}
+                              size="small"
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={`Échelon ${emp.echelon}`}
+                              color="primary"
+                              size="small"
+                              sx={{
+                                transition: "all 0.2s ease",
+                                "&:hover": {
+                                  transform: "translateY(-2px)",
+                                  boxShadow: `0 2px 4px ${alpha(primaryColor, 0.3)}`,
+                                },
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              label={emp.statut}
+                              color={emp.statut === "Actif" ? "success" : "default"}
+                              size="small"
+                              sx={{
+                                transition: "all 0.2s ease",
+                                "&:hover": {
+                                  transform: "translateY(-2px)",
+                                  boxShadow: `0 2px 4px ${alpha(
+                                    emp.statut === "Actif" ? theme.palette.success.main : "#888",
+                                    0.3,
+                                  )}`,
+                                },
+                              }}
+                            />
+                          </TableCell>
+                          <TableCell align="center">
+                            <Tooltip title="Actions" arrow TransitionComponent={Zoom}>
+                              <IconButton
+                                onClick={(event) => handleMenuOpen(event, emp)}
+                                sx={{
+                                  color: secondaryColor,
+                                  transition: "all 0.2s ease",
+                                  "&:hover": {
+                                    backgroundColor: alpha(secondaryColor, 0.1),
+                                    transform: "scale(1.1)",
+                                  },
+                                }}
+                              >
+                                <MoreVert />
+                              </IconButton>
+                            </Tooltip>
+                          </TableCell>
+                        </TableRow>
+                      ))
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={11} align="center" sx={{ py: 4 }}>
+                          <Typography variant="subtitle1" color="text.secondary">
+                            Aucun employé ne correspond aux critères de recherche
+                          </Typography>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+
+              {/* Pagination controls */}
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  p: 2,
+                  borderTop: `1px solid ${alpha(primaryColor, 0.1)}`,
+                  backgroundColor: alpha(primaryColor, 0.02),
+                }}
+              >
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ mr: 2 }}>
+                    Lignes par page:
+                  </Typography>
+                  <Select value={rowsPerPage} onChange={handleChangeRowsPerPage} size="small" sx={{ minWidth: 80 }}>
+                    {[5, 10, 25, 50].map((option) => (
+                      <MenuItem key={option} value={option}>
+                        {option}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                </Box>
+
+                <Box sx={{ display: "flex", alignItems: "center" }}>
+                  <Typography variant="body2" color="text.secondary" sx={{ mr: 2 }}>
+                    {page * rowsPerPage + 1}-{Math.min((page + 1) * rowsPerPage, filteredEmployees.length)} sur{" "}
+                    {filteredEmployees.length}
+                  </Typography>
+                  <Pagination
+                    count={Math.ceil(filteredEmployees.length / rowsPerPage)}
+                    page={page + 1}
+                    onChange={(e, p) => handleChangePage(e, p - 1)}
+                    color="primary"
+                    shape="rounded"
+                    showFirstButton
+                    showLastButton
+                    size={isMobile ? "small" : "medium"}
+                  />
+                </Box>
+              </Box>
+            </>
+          ) : (
+            // Virtualization mode
+            <Box sx={{ height: 500, width: "100%" }}>
+              <Box sx={{ display: "flex", width: "100%" }}>
+                <Table>
+                  <SortableTableHead columns={tableColumns} />
+                </Table>
+              </Box>
+              <AutoSizer disableHeight>
+                {({ width }) => (
+                  <List
+                    height={450}
+                    width={width}
+                    itemCount={filteredEmployees.length}
+                    itemSize={72} // Adjust based on your row height
+                  >
+                    {RowRenderer}
+                  </List>
+                )}
+              </AutoSizer>
+            </Box>
+          )}
         </Paper>
 
         {/* Menu déroulant pour actions CRUD */}
@@ -612,530 +789,73 @@ const EmployeeTable = () => {
           anchorEl={anchorEl}
           open={Boolean(anchorEl)}
           onClose={handleMenuClose}
+          TransitionComponent={Fade}
           PaperProps={{
             elevation: 3,
             sx: {
               borderRadius: 2,
               minWidth: 180,
+              overflow: "hidden",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.15)",
             },
           }}
         >
-          <MenuItem onClick={handleOpenDetailsDialog} sx={{ color: secondaryColor }}>
+          <MenuItem
+            onClick={handleOpenDetailsDialog}
+            sx={{
+              color: secondaryColor,
+              transition: "all 0.2s ease",
+              "&:hover": {
+                backgroundColor: alpha(secondaryColor, 0.1),
+                paddingLeft: "16px",
+              },
+            }}
+          >
             <Visibility fontSize="small" sx={{ mr: 1, color: primaryColor }} /> Détails
           </MenuItem>
-          <MenuItem onClick={handleOpenEditDialog} sx={{ color: secondaryColor }}>
+          <MenuItem
+            onClick={handleOpenEditDialog}
+            sx={{
+              color: secondaryColor,
+              transition: "all 0.2s ease",
+              "&:hover": {
+                backgroundColor: alpha(secondaryColor, 0.1),
+                paddingLeft: "16px",
+              },
+            }}
+          >
             <Edit fontSize="small" sx={{ mr: 1, color: primaryColor }} /> Modifier
           </MenuItem>
-          <MenuItem onClick={handleDelete} sx={{ color: accentColor }}>
+          <MenuItem
+            onClick={handleDelete}
+            sx={{
+              color: "error.main",
+              transition: "all 0.2s ease",
+              "&:hover": {
+                backgroundColor: alpha(theme.palette.error.main, 0.1),
+                paddingLeft: "16px",
+              },
+            }}
+          >
             <Delete fontSize="small" sx={{ mr: 1 }} /> Supprimer
           </MenuItem>
         </Menu>
 
         {/* Dialogue pour ajouter/modifier un employé */}
-        <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
-          <DialogTitle
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              borderBottom: `1px solid ${alpha(primaryColor, 0.2)}`,
-            }}
-          >
-            <Typography variant="h5">{selectedEmployee ? "Modifier un employé" : "Ajouter un employé"}</Typography>
-            {selectedEmployee && (
-              <Chip
-                label={selectedEmployee.statut}
-                color={selectedEmployee.statut === "Actif" ? "success" : "default"}
-                size="small"
-              />
-            )}
-          </DialogTitle>
-          <DialogContent sx={{ p: 0 }}>
-            <Tabs
-              value={tabValue}
-              onChange={handleTabChange}
-              variant="fullWidth"
-              sx={{
-                borderBottom: `1px solid ${alpha(primaryColor, 0.1)}`,
-                "& .MuiTab-root": {
-                  color: alpha(secondaryColor, 0.7),
-                  "&.Mui-selected": { color: primaryColor },
-                },
-                "& .MuiTabs-indicator": { backgroundColor: primaryColor },
-              }}
-            >
-              <Tab label="Informations personnelles" icon={<Person />} iconPosition="start" />
-              <Tab label="Informations professionnelles" icon={<Work />} iconPosition="start" />
-              <Tab label="Diplômes & Compétences" icon={<School />} iconPosition="start" />
-            </Tabs>
-
-            <TabPanel value={tabValue} index={0}>
-              <Grid container spacing={3}>
-                <Grid item xs={12} sm={4} display="flex" flexDirection="column" alignItems="center">
-                  <StyledAvatar
-                    src={selectedEmployee?.photo || "/placeholder.svg?height=150&width=150"}
-                    alt="Photo de profil"
-                  />
-                  <Button variant="outlined" color="primary" sx={{ mt: 2 }}>
-                    Changer la photo
-                  </Button>
-                </Grid>
-                <Grid item xs={12} sm={8}>
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        fullWidth
-                        label="Nom"
-                        defaultValue={selectedEmployee?.nom || ""}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <Badge sx={{ color: alpha(primaryColor, 0.6) }} />
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        fullWidth
-                        label="Prénom"
-                        defaultValue={selectedEmployee?.prenom || ""}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <Person sx={{ color: alpha(primaryColor, 0.6) }} />
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        fullWidth
-                        label="Date de naissance"
-                        type="date"
-                        defaultValue={selectedEmployee?.dateNaissance || ""}
-                        InputLabelProps={{ shrink: true }}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <CalendarMonth sx={{ color: alpha(primaryColor, 0.6) }} />
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        fullWidth
-                        label="Email"
-                        type="email"
-                        defaultValue={selectedEmployee?.email || ""}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <Email sx={{ color: alpha(primaryColor, 0.6) }} />
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        fullWidth
-                        label="Téléphone"
-                        defaultValue={selectedEmployee?.telephone || ""}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <Phone sx={{ color: alpha(primaryColor, 0.6) }} />
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6}>
-                      <TextField
-                        fullWidth
-                        label="Adresse"
-                        defaultValue={selectedEmployee?.adresse || ""}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <LocationOn sx={{ color: alpha(primaryColor, 0.6) }} />
-                            </InputAdornment>
-                          ),
-                        }}
-                      />
-                    </Grid>
-                  </Grid>
-                </Grid>
-              </Grid>
-            </TabPanel>
-
-            <TabPanel value={tabValue} index={1}>
-              <Grid container spacing={2}>
-                <Grid item xs={12} sm={6}>
-                  <FormControl fullWidth>
-                    <InputLabel>Département</InputLabel>
-                    <Select
-                      defaultValue={selectedEmployee?.departement || ""}
-                      label="Département"
-                      startAdornment={
-                        <InputAdornment position="start">
-                          <Work sx={{ color: alpha(primaryColor, 0.6) }} />
-                        </InputAdornment>
-                      }
-                    >
-                      {departments.map((dept) => (
-                        <MenuItem key={dept} value={dept}>
-                          {dept}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Poste"
-                    defaultValue={selectedEmployee?.poste || ""}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Assignment sx={{ color: alpha(primaryColor, 0.6) }} />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Date de recrutement"
-                    type="date"
-                    defaultValue={selectedEmployee?.dateDeRecrutement || ""}
-                    InputLabelProps={{ shrink: true }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <CalendarMonth sx={{ color: alpha(primaryColor, 0.6) }} />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Date de grade"
-                    type="date"
-                    defaultValue={selectedEmployee?.dateDeGrade || ""}
-                    InputLabelProps={{ shrink: true }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <CalendarMonth sx={{ color: alpha(primaryColor, 0.6) }} />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    fullWidth
-                    label="Ancienneté échelon"
-                    type="date"
-                    defaultValue={selectedEmployee?.AncienneteEchelon || ""}
-                    InputLabelProps={{ shrink: true }}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <EventAvailable sx={{ color: alpha(primaryColor, 0.6) }} />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <FormControl fullWidth>
-                    <InputLabel>Type de contrat</InputLabel>
-                    <Select
-                      defaultValue={selectedEmployee?.typeContrat || ""}
-                      label="Type de contrat"
-                      startAdornment={
-                        <InputAdornment position="start">
-                          <Work sx={{ color: alpha(primaryColor, 0.6) }} />
-                        </InputAdornment>
-                      }
-                    >
-                      <MenuItem value="Permanent">Permanent</MenuItem>
-                      <MenuItem value="CDD">CDD</MenuItem>
-                      <MenuItem value="Vacataire">Vacataire</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <FormControl fullWidth>
-                    <InputLabel>Statut</InputLabel>
-                    <Select
-                      defaultValue={selectedEmployee?.statut || ""}
-                      label="Statut"
-                      startAdornment={
-                        <InputAdornment position="start">
-                          <Person sx={{ color: alpha(primaryColor, 0.6) }} />
-                        </InputAdornment>
-                      }
-                    >
-                      <MenuItem value="Actif">Actif</MenuItem>
-                      <MenuItem value="En congé">En congé</MenuItem>
-                      <MenuItem value="Suspendu">Suspendu</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
-              </Grid>
-            </TabPanel>
-
-            <TabPanel value={tabValue} index={2}>
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2" gutterBottom>
-                    Diplômes
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    label="Diplômes (séparés par des virgules)"
-                    defaultValue={selectedEmployee?.diplomes?.join(", ") || ""}
-                    multiline
-                    rows={2}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <School sx={{ color: alpha(primaryColor, 0.6) }} />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-
-                  {selectedEmployee?.diplomes && selectedEmployee.diplomes.length > 0 && (
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 2 }}>
-                      {selectedEmployee.diplomes.map((diplome, index) => (
-                        <Chip key={index} label={diplome} color="primary" onDelete={() => {}} />
-                      ))}
-                    </Box>
-                  )}
-                </Grid>
-
-                <Grid item xs={12} sx={{ mt: 2 }}>
-                  <Typography variant="subtitle2" gutterBottom>
-                    Compétences
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    label="Compétences (séparées par des virgules)"
-                    defaultValue={selectedEmployee?.competences?.join(", ") || ""}
-                    multiline
-                    rows={2}
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Work sx={{ color: alpha(primaryColor, 0.6) }} />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-
-                  {selectedEmployee?.competences && selectedEmployee.competences.length > 0 && (
-                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 2 }}>
-                      {selectedEmployee.competences.map((competence, index) => (
-                        <Chip key={index} label={competence} color="secondary" onDelete={() => {}} />
-                      ))}
-                    </Box>
-                  )}
-                </Grid>
-              </Grid>
-            </TabPanel>
-          </DialogContent>
-          <DialogActions sx={{ p: 3, borderTop: `1px solid ${alpha(primaryColor, 0.1)}` }}>
-            <Button onClick={handleCloseDialog} variant="outlined" color="secondary">
-              Annuler
-            </Button>
-            <Button variant="contained" color="primary" onClick={handleCloseDialog}>
-              {selectedEmployee ? "Mettre à jour" : "Ajouter"}
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <EmployeeFormDialog open={openDialog} onClose={handleCloseDialog} employee={selectedEmployee} />
 
         {/* Dialogue pour afficher les détails d'un employé */}
-        <Dialog open={openDetailsDialog} onClose={handleCloseDetailsDialog} maxWidth="md" fullWidth>
-          <DialogTitle
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "space-between",
-              borderBottom: `1px solid ${alpha(primaryColor, 0.2)}`,
-            }}
-          >
-            <Typography variant="h5">Détails de l'employé</Typography>
-            {selectedEmployee && (
-              <Chip
-                label={selectedEmployee.statut}
-                color={selectedEmployee.statut === "Actif" ? "success" : "default"}
-                size="small"
-              />
-            )}
-          </DialogTitle>
-          <DialogContent>
-            {selectedEmployee && (
-              <Grid container spacing={3} sx={{ mt: 1 }}>
-                <Grid item xs={12} sm={4} display="flex" flexDirection="column" alignItems="center">
-                  <StyledAvatar
-                    src={selectedEmployee.photo}
-                    alt={`${selectedEmployee.prenom} ${selectedEmployee.nom}`}
-                  />
-                  <Typography variant="h5" sx={{ mt: 2, textAlign: "center" }}>
-                    {selectedEmployee.prenom} {selectedEmployee.nom}
-                  </Typography>
-                  <Typography variant="subtitle1" color="text.secondary" sx={{ textAlign: "center" }}>
-                    {selectedEmployee.poste}
-                  </Typography>
-                  <Chip label={selectedEmployee.departement} color="primary" sx={{ mt: 1 }} />
-                </Grid>
-
-                <Grid item xs={12} sm={8}>
-                  <Box sx={{ mb: 3 }}>
-                    <Typography variant="subtitle2">Informations personnelles</Typography>
-                    <Divider sx={{ mb: 2, borderColor: alpha(primaryColor, 0.2) }} />
-
-                    <InfoItem>
-                      <Email fontSize="small" />
-                      <Typography variant="body1">{selectedEmployee.email}</Typography>
-                    </InfoItem>
-                    <InfoItem>
-                      <Phone fontSize="small" />
-                      <Typography variant="body1">{selectedEmployee.telephone}</Typography>
-                    </InfoItem>
-                    <InfoItem>
-                      <LocationOn fontSize="small" />
-                      <Typography variant="body1">{selectedEmployee.adresse}</Typography>
-                    </InfoItem>
-                    <InfoItem>
-                      <CalendarMonth fontSize="small" />
-                      <Typography variant="body1">Né(e) le {selectedEmployee.dateNaissance}</Typography>
-                    </InfoItem>
-                  </Box>
-
-                  <Box sx={{ mb: 3 }}>
-                    <Typography variant="subtitle2">Informations professionnelles</Typography>
-                    <Divider sx={{ mb: 2, borderColor: alpha(primaryColor, 0.2) }} />
-
-                    <Grid container spacing={2}>
-                      <Grid item xs={12} sm={6}>
-                        <InfoItem>
-                          <Work fontSize="small" />
-                          <Typography variant="body1">
-                            <b>Type de contrat:</b> {selectedEmployee.typeContrat}
-                          </Typography>
-                        </InfoItem>
-                        <InfoItem>
-                          <CalendarMonth fontSize="small" />
-                          <Typography variant="body1">
-                            <b>Date de recrutement:</b> {selectedEmployee.dateDeRecrutement}
-                          </Typography>
-                        </InfoItem>
-                      </Grid>
-                      <Grid item xs={12} sm={6}>
-                        <InfoItem>
-                          <CalendarMonth fontSize="small" />
-                          <Typography variant="body1">
-                            <b>Date de grade:</b> {selectedEmployee.dateDeGrade}
-                          </Typography>
-                        </InfoItem>
-                        <InfoItem>
-                          <EventAvailable fontSize="small" />
-                          <Typography variant="body1">
-                            <b>Ancienneté échelon:</b> {selectedEmployee.AncienneteEchelon}
-                          </Typography>
-                        </InfoItem>
-                      </Grid>
-                    </Grid>
-                  </Box>
-
-                  <Box sx={{ mb: 3 }}>
-                    <Typography variant="subtitle2">Solde de congés</Typography>
-                    <Divider sx={{ mb: 2, borderColor: alpha(primaryColor, 0.2) }} />
-
-                    <Grid container spacing={2}>
-                      <Grid item xs={6}>
-                        <Box
-                          sx={{
-                            p: 2,
-                            bgcolor: alpha(primaryColor, 0.1),
-                            borderRadius: 2,
-                            textAlign: "center",
-                          }}
-                        >
-                          <Typography variant="h5" color="primary">
-                            {selectedEmployee.soldeConges.annuel}
-                          </Typography>
-                          <Typography variant="body2">Congés annuels</Typography>
-                        </Box>
-                      </Grid>
-                      <Grid item xs={6}>
-                        <Box
-                          sx={{
-                            p: 2,
-                            bgcolor: alpha(secondaryColor, 0.1),
-                            borderRadius: 2,
-                            textAlign: "center",
-                          }}
-                        >
-                          <Typography variant="h5" color="secondary">
-                            {selectedEmployee.soldeConges.maladie}
-                          </Typography>
-                          <Typography variant="body2">Congés maladie</Typography>
-                        </Box>
-                      </Grid>
-                    </Grid>
-                  </Box>
-                </Grid>
-
-                <Grid item xs={12}>
-                  <Typography variant="subtitle2">Diplômes</Typography>
-                  <Divider sx={{ mb: 2, borderColor: alpha(primaryColor, 0.2) }} />
-
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 3 }}>
-                    {selectedEmployee.diplomes.map((diplome, index) => (
-                      <Chip key={index} label={diplome} color="primary" icon={<School />} />
-                    ))}
-                  </Box>
-
-                  <Typography variant="subtitle2">Compétences</Typography>
-                  <Divider sx={{ mb: 2, borderColor: alpha(primaryColor, 0.2) }} />
-
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                    {selectedEmployee.competences.map((competence, index) => (
-                      <Chip key={index} label={competence} color="secondary" />
-                    ))}
-                  </Box>
-                </Grid>
-              </Grid>
-            )}
-          </DialogContent>
-          <DialogActions sx={{ p: 3, borderTop: `1px solid ${alpha(primaryColor, 0.1)}` }}>
-            <Button onClick={handleCloseDetailsDialog} variant="outlined" color="secondary">
-              Fermer
-            </Button>
-            <Button variant="contained" color="primary" onClick={handleOpenEditDialog} startIcon={<Edit />}>
-              Modifier
-            </Button>
-          </DialogActions>
-        </Dialog>
+        <EmployeeDetailsDialog
+          open={openDetailsDialog}
+          onClose={handleCloseDetailsDialog}
+          employee={selectedEmployee}
+          onEdit={handleOpenEditDialog}
+        />
       </Box>
     </ThemeProvider>
   )
 }
 
 export default EmployeeTable
+
 

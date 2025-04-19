@@ -7,15 +7,12 @@ import {
   CardContent,
   Typography,
   LinearProgress,
-  Grid,
+  
   ThemeProvider,
-  createTheme,
   CssBaseline,
   Paper,
-  Avatar,
-  alpha,
-  styled,
   Divider,
+  Avatar,
 } from "@mui/material"
 import GroupIcon from "@mui/icons-material/Group"
 import EventIcon from "@mui/icons-material/Event"
@@ -24,138 +21,15 @@ import DescriptionIcon from "@mui/icons-material/Description"
 import TrendingUpIcon from "@mui/icons-material/TrendingUp"
 import AccessTimeIcon from "@mui/icons-material/AccessTime"
 import CheckCircleIcon from "@mui/icons-material/CheckCircle"
+import { styled, alpha } from "@mui/material/styles"
+import theme, { primaryColor, secondaryColor, accentColor, backgroundColor } from "../../utils/theme"
+import Grid from "@mui/material/Grid";
 
-// Définition des couleurs principales selon la charte graphique
-const primaryColor = "#B36B39" // Couleur bronze/cuivre du logo
-const secondaryColor = "#2C3E50" // Bleu foncé pour le contraste
-const backgroundColor = "#F5F5F5" // Gris clair pour le fond
-const accentColor = "#E74C3C" // Rouge pour l'accent
 
-// Création du thème
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: primaryColor,
-      contrastText: "#ffffff",
-    },
-    secondary: {
-      main: secondaryColor,
-      contrastText: "#ffffff",
-    },
-    background: {
-      default: backgroundColor,
-      paper: "#ffffff",
-    },
-    error: {
-      main: accentColor,
-    },
-    success: {
-      main: "#2ECC71",
-    },
-  },
-  typography: {
-    fontFamily: '"Roboto", "Arial", sans-serif',
-    h1: {
-      fontSize: "2.5rem",
-      fontWeight: 700,
-      color: secondaryColor,
-    },
-    h2: {
-      fontSize: "2rem",
-      fontWeight: 600,
-      color: primaryColor,
-    },
-    h4: {
-      fontSize: "1.5rem",
-      fontWeight: 600,
-      color: secondaryColor,
-    },
-    h5: {
-      fontSize: "1.2rem",
-      fontWeight: 600,
-      color: secondaryColor,
-    },
-    body1: {
-      fontSize: "1rem",
-      color: "#333",
-    },
-    subtitle1: {
-      color: primaryColor,
-      fontWeight: 500,
-    },
-    subtitle2: {
-      color: secondaryColor,
-      fontWeight: 600,
-      textTransform: "uppercase",
-      letterSpacing: "0.5px",
-      marginTop: "16px",
-    },
-  },
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: 30,
-          textTransform: "none",
-          padding: "10px 20px",
-          transition: "all 0.3s ease",
-          fontWeight: 600,
-          boxShadow: "none",
-          "&:hover": {
-            transform: "translateY(-3px)",
-            boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-          },
-        },
-        containedPrimary: {
-          background: `linear-gradient(45deg, ${primaryColor} 30%, ${primaryColor}CC 90%)`,
-          "&:hover": {
-            background: `linear-gradient(45deg, ${primaryColor}CC 30%, ${primaryColor} 90%)`,
-          },
-        },
-        containedSecondary: {
-          background: `linear-gradient(45deg, ${secondaryColor} 30%, ${secondaryColor}CC 90%)`,
-          "&:hover": {
-            background: `linear-gradient(45deg, ${secondaryColor}CC 30%, ${secondaryColor} 90%)`,
-          },
-        },
-        outlined: {
-          borderWidth: 2,
-          "&:hover": {
-            borderWidth: 2,
-          },
-        },
-      },
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          borderRadius: 16,
-          boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
-          transition: "transform 0.3s ease, box-shadow 0.3s ease",
-          "&:hover": {
-            transform: "translateY(-5px)",
-            boxShadow: "0 12px 24px rgba(0,0,0,0.1)",
-          },
-        },
-      },
-    },
-    MuiLinearProgress: {
-      styleOverrides: {
-        root: {
-          height: 10,
-          borderRadius: 5,
-          backgroundColor: alpha(secondaryColor, 0.1),
-        },
-        barColorPrimary: {
-          backgroundImage: `linear-gradient(90deg, ${primaryColor} 0%, ${primaryColor}CC 100%)`,
-        },
-      },
-    },
-  },
-})
-
-// Composants stylisés
-const StyledAvatar = styled(Avatar)(({ theme, bgcolor }) => ({
+// Correction: définir le StyledAvatar correctement pour JSX
+const StyledAvatar = styled(Avatar, {
+  shouldForwardProp: (prop) => prop !== "bgcolor",
+})(({ bgcolor }) => ({
   width: 56,
   height: 56,
   backgroundColor: bgcolor ? bgcolor : alpha(primaryColor, 0.1),
@@ -163,7 +37,10 @@ const StyledAvatar = styled(Avatar)(({ theme, bgcolor }) => ({
   boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
 }))
 
-const StyledCard = styled(Card)(({ theme, gradient }) => ({
+// Correction: définir le StyledCard correctement pour JSX
+const StyledCard = styled(Card, {
+  shouldForwardProp: (prop) => prop !== "gradient",
+})(({ gradient }) => ({
   height: "100%",
   position: "relative",
   overflow: "hidden",
@@ -203,9 +80,9 @@ const cardsData = [
   {
     title: "Tâches en Cours",
     value: "38",
-    progress: 50, // Pourcentage de progression
+    progress: 50,
     icon: <AssignmentIcon sx={{ fontSize: 30 }} />,
-    color: "#3498DB", // Bleu
+    color: "#3498DB",
     gradient: "linear-gradient(90deg, #3498DB 0%, #3498DBCC 100%)",
     progressLabel: "50% complété",
   },
@@ -214,7 +91,7 @@ const cardsData = [
     value: "4",
     change: "Générés ce mois-ci",
     icon: <DescriptionIcon sx={{ fontSize: 30 }} />,
-    color: "#2ECC71", // Vert
+    color: "#2ECC71",
     gradient: "linear-gradient(90deg, #2ECC71 0%, #2ECC71CC 100%)",
     changeIcon: <CheckCircleIcon sx={{ fontSize: 16, color: "#2ECC71", mr: 0.5 }} />,
     positive: true,
@@ -267,7 +144,6 @@ export default function Dashboard() {
 
                   <Divider sx={{ my: 1.5, borderColor: alpha(card.color, 0.1) }} />
 
-                  {/* Affichage conditionnel : texte ou barre de progression */}
                   {card.progress !== undefined ? (
                     <Box sx={{ mt: 2 }}>
                       <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
@@ -350,4 +226,3 @@ export default function Dashboard() {
     </ThemeProvider>
   )
 }
-

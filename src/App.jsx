@@ -10,9 +10,10 @@ import RhPage from './pages/Rh/RhPage';
 import ConcoursPage from './pages/Concours/ConcoursPage';
 import CongePage from './pages/Rh/conge'
 import Charte_graphiquePage from './pages/Charte_Graphique/charte'
-
+import PromotionPage from "./pages/Rh/Promotion/PromotionPage" 
 import DashboardLayoutBasic from './components/DashboardLayoutBasic'
 import { Route, Routes } from 'react-router-dom';
+//import PromotionPage from './pages/Rh/conge';
 
 
 function App() {
@@ -29,6 +30,7 @@ function App() {
       <Route path="rh/Rapports" element={<RapportPage />} />
       <Route path="/rh/taches" element={<TachesPage />} />
       <Route path="/rh/Conges" element={<CongePage />} />
+      <Route path="/rh/promotion/*" element={<PromotionPage />} />
       <Route path="concours" element={<ConcoursPage />} />
       <Route path="charte_graphique" element={<Charte_graphiquePage />} />
     </Route>

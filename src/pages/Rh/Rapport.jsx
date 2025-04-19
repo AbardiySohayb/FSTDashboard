@@ -10,11 +10,9 @@ import {
   Select,
   Typography,
   Grid,
-  ThemeProvider,
-  createTheme,
+
   CssBaseline,
-  alpha,
-  styled,
+ 
   Divider,
   Paper,
   FormControl,
@@ -49,182 +47,14 @@ import {
   CartesianGrid,
 } from "recharts"
 
-// Définition des couleurs principales selon la charte graphique
-const primaryColor = "#B36B39" // Couleur bronze/cuivre du logo
-const secondaryColor = "#2C3E50" // Bleu foncé pour le contraste
-const backgroundColor = "#F5F5F5" // Gris clair pour le fond
-const accentColor = "#E74C3C" // Rouge pour l'accent
-const successColor = "#2ECC71" // Vert pour les succès
-const warningColor = "#F39C12" // Orange pour les avertissements
-const infoColor = "#3498DB" // Bleu pour les informations
+import { ThemeProvider } from '@mui/material/styles';
 
-// Création du thème
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: primaryColor,
-      contrastText: "#ffffff",
-    },
-    secondary: {
-      main: secondaryColor,
-      contrastText: "#ffffff",
-    },
-    background: {
-      default: backgroundColor,
-      paper: "#ffffff",
-    },
-    error: {
-      main: accentColor,
-    },
-    success: {
-      main: successColor,
-    },
-    warning: {
-      main: warningColor,
-    },
-    info: {
-      main: infoColor,
-    },
-  },
-  typography: {
-    fontFamily: '"Roboto", "Arial", sans-serif',
-    h1: {
-      fontSize: "2.5rem",
-      fontWeight: 700,
-      color: secondaryColor,
-    },
-    h2: {
-      fontSize: "2rem",
-      fontWeight: 600,
-      color: primaryColor,
-    },
-    h4: {
-      fontSize: "1.5rem",
-      fontWeight: 600,
-      color: secondaryColor,
-    },
-    h5: {
-      fontSize: "1.2rem",
-      fontWeight: 600,
-      color: secondaryColor,
-    },
-    h6: {
-      fontSize: "1.1rem",
-      fontWeight: 600,
-      color: secondaryColor,
-    },
-    body1: {
-      fontSize: "1rem",
-      color: "#333",
-    },
-    body2: {
-      fontSize: "0.875rem",
-      color: alpha("#333", 0.7),
-    },
-    subtitle1: {
-      color: primaryColor,
-      fontWeight: 500,
-    },
-    subtitle2: {
-      color: secondaryColor,
-      fontWeight: 600,
-      textTransform: "uppercase",
-      letterSpacing: "0.5px",
-      marginTop: "16px",
-    },
-  },
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: 30,
-          textTransform: "none",
-          padding: "10px 20px",
-          transition: "all 0.3s ease",
-          fontWeight: 600,
-          boxShadow: "none",
-          "&:hover": {
-            transform: "translateY(-3px)",
-            boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-          },
-        },
-        containedPrimary: {
-          background: `linear-gradient(45deg, ${primaryColor} 30%, ${primaryColor}CC 90%)`,
-          "&:hover": {
-            background: `linear-gradient(45deg, ${primaryColor}CC 30%, ${primaryColor} 90%)`,
-          },
-        },
-        containedSecondary: {
-          background: `linear-gradient(45deg, ${secondaryColor} 30%, ${secondaryColor}CC 90%)`,
-          "&:hover": {
-            background: `linear-gradient(45deg, ${secondaryColor}CC 30%, ${secondaryColor} 90%)`,
-          },
-        },
-        outlined: {
-          borderWidth: 2,
-          "&:hover": {
-            borderWidth: 2,
-          },
-        },
-      },
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          borderRadius: 16,
-          boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
-          transition: "transform 0.3s ease, box-shadow 0.3s ease",
-          "&:hover": {
-            transform: "translateY(-5px)",
-            boxShadow: "0 12px 24px rgba(0,0,0,0.1)",
-          },
-        },
-      },
-    },
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          borderRadius: 16,
-          boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
-        },
-      },
-    },
-    MuiFormControl: {
-      styleOverrides: {
-        root: {
-          "& .MuiOutlinedInput-root": {
-            borderRadius: 30,
-            "&:hover fieldset": {
-              borderColor: primaryColor,
-            },
-            "&.Mui-focused fieldset": {
-              borderColor: primaryColor,
-            },
-          },
-          "& .MuiInputLabel-root.Mui-focused": {
-            color: primaryColor,
-          },
-        },
-      },
-    },
-    MuiChip: {
-      styleOverrides: {
-        root: {
-          borderRadius: 16,
-          fontWeight: 500,
-        },
-        colorPrimary: {
-          backgroundColor: alpha(primaryColor, 0.1),
-          color: primaryColor,
-        },
-        colorSecondary: {
-          backgroundColor: alpha(secondaryColor, 0.1),
-          color: secondaryColor,
-        },
-      },
-    },
-  },
-})
+
+// Définition des couleurs principales selon la charte graphique
+import theme, { primaryColor, secondaryColor, accentColor, backgroundColor} from "../../utils/theme"
+import { styled, alpha } from "@mui/material/styles"
+import  infoColor  from "../../utils/theme"
+import { successColor } from "../../utils/theme"
 
 // Composants stylisés
 const StyledAvatar = styled(Avatar)(({ theme, bgcolor }) => ({
