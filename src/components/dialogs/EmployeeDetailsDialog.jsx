@@ -1,4 +1,5 @@
 "use client"
+import { useEffect, useState } from "react"
 import {
   Dialog,
   DialogTitle,
@@ -11,6 +12,7 @@ import {
   Chip,
   Divider,
   alpha,
+  CircularProgress,
 } from "@mui/material"
 import {
   Edit,
@@ -25,9 +27,50 @@ import {
 } from "@mui/icons-material"
 import { StyledAvatar, InfoItem } from "../styled/StyledComponents"
 import { primaryColor, secondaryColor } from "../../utils/theme"
+import EmployeeService from "../../../services/RH/employeService"
+import { API_ENDPOINTS, apiService } from "../../../config/appconfig"
 
 const EmployeeDetailsDialog = ({ open, onClose, employee, onEdit }) => {
+  const [loading, setLoading] = useState(false)
+  const [employeeIndice, setEmployeeIndice] = useState(null)
+  const [error, setError] = useState(null)
+
+  // Fetch employee indice when dialog opens
+  useEffect(() => {
+    if (open && employee?.id) {
+      fetchEmployeeIndice(employee.id)
+    }
+  }, [open, employee])
+
+  const fetchEmployeeIndice = async (employeeId) => {
+    setLoading(true)
+    try {
+      const indice = await apiService.get(API_ENDPOINTS.EMPLOYEES.GET_INDICE(employeeId))
+      setEmployeeIndice(indice)
+    } catch (err) {
+      console.error("Error fetching employee indice:", err)
+      setError("Impossible de récupérer l'indice de l'employé")
+    } finally {
+      setLoading(false)
+    }
+  }
+
   if (!employee) return null
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return "Non spécifié"
+    try {
+      const date = new Date(dateString)
+      return date.toLocaleDateString("fr-FR", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    } catch (e) {
+      return dateString
+    }
+  }
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -74,7 +117,7 @@ const EmployeeDetailsDialog = ({ open, onClose, employee, onEdit }) => {
               </InfoItem>
               <InfoItem>
                 <CalendarMonth fontSize="small" />
-                <Typography variant="body1">Né(e) le {employee.dateNaissance}</Typography>
+                <Typography variant="body1">Né(e) le {formatDate(employee.dateNaissance)}</Typography>
               </InfoItem>
             </Box>
 
@@ -99,7 +142,7 @@ const EmployeeDetailsDialog = ({ open, onClose, employee, onEdit }) => {
                   <InfoItem>
                     <CalendarMonth fontSize="small" />
                     <Typography variant="body1">
-                      <b>Date de recrutement:</b> {employee.dateDeRecrutement}
+                      <b>Date de recrutement:</b> {formatDate(employee.dateDeRecrutement)}
                     </Typography>
                   </InfoItem>
                 </Grid>
@@ -107,80 +150,123 @@ const EmployeeDetailsDialog = ({ open, onClose, employee, onEdit }) => {
                   <InfoItem>
                     <CalendarMonth fontSize="small" />
                     <Typography variant="body1">
-                      <b>Date de grade:</b> {employee.dateDeGrade}
+                      <b>Date de grade:</b> {formatDate(employee.dateDeGrade)}
                     </Typography>
                   </InfoItem>
                   <InfoItem>
                     <EventAvailable fontSize="small" />
                     <Typography variant="body1">
-                      <b>Ancienneté échelon:</b> {employee.AncienneteEchelon}
+                      <b>Ancienneté échelon:</b> {formatDate(employee.AncienneteEchelon)}
                     </Typography>
                   </InfoItem>
                 </Grid>
               </Grid>
             </Box>
 
+            {/* Indice section */}
             <Box sx={{ mb: 3 }}>
-              <Typography variant="subtitle2">Solde de congés</Typography>
+              <Typography variant="subtitle2">Indice</Typography>
               <Divider sx={{ mb: 2, borderColor: alpha(primaryColor, 0.2) }} />
 
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <Box
-                    sx={{
-                      p: 2,
-                      bgcolor: alpha(primaryColor, 0.1),
-                      borderRadius: 2,
-                      textAlign: "center",
-                    }}
-                  >
-                    <Typography variant="h5" color="primary">
-                      {employee.soldeConges.annuel}
-                    </Typography>
-                    <Typography variant="body2">Congés annuels</Typography>
-                  </Box>
+              {loading ? (
+                <Box sx={{ display: "flex", justifyContent: "center", p: 2 }}>
+                  <CircularProgress size={24} />
+                </Box>
+              ) : error ? (
+                <Typography color="error">{error}</Typography>
+              ) : (
+                <Grid container spacing={2}>
+                  <Grid item xs={12}>
+                    <Box
+                      sx={{
+                        p: 2,
+                        bgcolor: alpha(primaryColor, 0.1),
+                        borderRadius: 2,
+                        textAlign: "center",
+                      }}
+                    >
+                      <Typography variant="h5" color="primary">
+                        {employeeIndice?.valeur || "Non disponible"}
+                      </Typography>
+                      <Typography variant="body2">Indice</Typography>
+                    </Box>
+                  </Grid>
                 </Grid>
-                <Grid item xs={6}>
-                  <Box
-                    sx={{
-                      p: 2,
-                      bgcolor: alpha(secondaryColor, 0.1),
-                      borderRadius: 2,
-                      textAlign: "center",
-                    }}
-                  >
-                    <Typography variant="h5" color="secondary">
-                      {employee.soldeConges.maladie}
-                    </Typography>
-                    <Typography variant="body2">Congés maladie</Typography>
-                  </Box>
-                </Grid>
-              </Grid>
+              )}
             </Box>
+
+            {/* Conditionally render solde congés if available */}
+            {employee.soldeConges && (
+              <Box sx={{ mb: 3 }}>
+                <Typography variant="subtitle2">Solde de congés</Typography>
+                <Divider sx={{ mb: 2, borderColor: alpha(primaryColor, 0.2) }} />
+
+                <Grid container spacing={2}>
+                  <Grid item xs={6}>
+                    <Box
+                      sx={{
+                        p: 2,
+                        bgcolor: alpha(primaryColor, 0.1),
+                        borderRadius: 2,
+                        textAlign: "center",
+                      }}
+                    >
+                      <Typography variant="h5" color="primary">
+                        {employee.soldeConges.annuel}
+                      </Typography>
+                      <Typography variant="body2">Congés annuels</Typography>
+                    </Box>
+                  </Grid>
+                  <Grid item xs={6}>
+                    <Box
+                      sx={{
+                        p: 2,
+                        bgcolor: alpha(secondaryColor, 0.1),
+                        borderRadius: 2,
+                        textAlign: "center",
+                      }}
+                    >
+                      <Typography variant="h5" color="secondary">
+                        {employee.soldeConges.maladie}
+                      </Typography>
+                      <Typography variant="body2">Congés maladie</Typography>
+                    </Box>
+                  </Grid>
+                </Grid>
+              </Box>
+            )}
           </Grid>
 
-          <Grid item xs={12}>
-            <Typography variant="subtitle2">Diplômes</Typography>
-            <Divider sx={{ mb: 2, borderColor: alpha(primaryColor, 0.2) }} />
+          {/* Conditionally render diplomes and competences if available */}
+          {(employee.diplomes || employee.competences) && (
+            <Grid item xs={12}>
+              {employee.diplomes && (
+                <>
+                  <Typography variant="subtitle2">Diplômes</Typography>
+                  <Divider sx={{ mb: 2, borderColor: alpha(primaryColor, 0.2) }} />
 
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 3 }}>
-              {employee.diplomes.map((diplome, index) => (
-                <Chip key={index} label={diplome} color="primary" icon={<School />} />
-              ))}
-            </Box>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 3 }}>
+                    {employee.diplomes.map((diplome, index) => (
+                      <Chip key={index} label={diplome} color="primary" icon={<School />} />
+                    ))}
+                  </Box>
+                </>
+              )}
 
-            <Typography variant="subtitle2">Compétences</Typography>
-            <Divider sx={{ mb: 2, borderColor: alpha(primaryColor, 0.2) }} />
+              {employee.competences && (
+                <>
+                  <Typography variant="subtitle2">Compétences</Typography>
+                  <Divider sx={{ mb: 2, borderColor: alpha(primaryColor, 0.2) }} />
 
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 3 }}>
-              {employee.competences.map((competence, index) => (
-                <Chip key={index} label={competence} color="secondary" />
-              ))}
-            </Box>
-
-            <Typography variant="subtitle2">Historique des promotions</Typography>
-            <Divider sx={{ mb: 2, borderColor: alpha(primaryColor, 0.2) }} />
-          </Grid>
+                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 3 }}>
+                    {employee.competences.map((competence, index) => (
+                      <Chip key={index} label={competence} color="secondary" />
+                    ))}
+                  </Box>
+                </>
+              )}
+            </Grid>
+          )}
         </Grid>
       </DialogContent>
       <DialogActions sx={{ p: 3, borderTop: `1px solid ${alpha(primaryColor, 0.1)}` }}>

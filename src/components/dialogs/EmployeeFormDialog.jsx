@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Dialog,
   DialogTitle,
@@ -20,6 +20,8 @@ import {
   Tab,
   InputAdornment,
   alpha,
+  CircularProgress,
+  Alert,
 } from "@mui/material"
 import {
   Person,
@@ -38,17 +40,315 @@ import {
 } from "@mui/icons-material"
 import { StyledAvatar, TabPanel } from "../styled/StyledComponents"
 import { primaryColor } from "../../utils/theme"
-import { departments, niveauxGrade, echelons } from "../../data/mockData"
+import EmployeeService from "../../../services/RH/employeService"
 
-const EmployeeFormDialog = ({ open, onClose, employee }) => {
+const EmployeeFormDialog = ({ open, onClose, employee, onSave }) => {
   const [tabValue, setTabValue] = useState(0)
+  const [formData, setFormData] = useState({
+    id: "",
+    nom: "",
+    prenom: "",
+    dateNaissance: "",
+    adresse: "",
+    telephone: "",
+    email: "",
+    departement: "",
+    poste: "",
+    dateDeRecrutement: "",
+    dateDeGrade: "",
+    AncienneteEchelon: "",
+    typeContrat: "CDI", // Default value
+    statut: "Actif", // Default value
+    categorie: "",
+    niveauGrade: "",
+    echelon: "",
+    diplomes: [],
+    competences: [],
+  })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState(null)
+  const [success, setSuccess] = useState(false)
+  const [departments, setDepartments] = useState([])
+  const [categories, setCategories] = useState([])
+  const [availableGrades, setAvailableGrades] = useState([])
+  const [availableEchelons, setAvailableEchelons] = useState([])
+  const [newDiplome, setNewDiplome] = useState("")
+  const [newCompetence, setNewCompetence] = useState("")
+
+  // Initialize form data when employee changes
+  useEffect(() => {
+    if (employee) {
+      setFormData({
+        id: employee.id || "",
+        nom: employee.nom || "",
+        prenom: employee.prenom || "",
+        dateNaissance: employee.dateNaissance || "",
+        adresse: employee.adresse || "",
+        telephone: employee.telephone || "",
+        email: employee.email || "",
+        departement: employee.departement || "",
+        poste: employee.poste || "",
+        dateDeRecrutement: employee.dateDeRecrutement || "",
+        dateDeGrade: employee.dateDeGrade || "",
+        AncienneteEchelon: employee.AncienneteEchelon || "",
+        typeContrat: employee.typeContrat || "CDI",
+        statut: employee.statut || "Actif",
+        categorie: employee.categorie || "",
+        niveauGrade: employee.niveauGrade || "",
+        echelon: employee.echelon || "",
+        diplomes: employee.diplomes || [],
+        competences: employee.competences || [],
+      })
+    } else {
+      // Reset form for new employee
+      setFormData({
+        id: "",
+        nom: "",
+        prenom: "",
+        dateNaissance: "",
+        adresse: "",
+        telephone: "",
+        email: "",
+        departement: "",
+        poste: "",
+        dateDeRecrutement: "",
+        dateDeGrade: "",
+        AncienneteEchelon: "",
+        typeContrat: "CDI",
+        statut: "Actif",
+        categorie: "",
+        niveauGrade: "",
+        echelon: "",
+        diplomes: [],
+        competences: [],
+      })
+    }
+  }, [employee, open])
+
+  // Fetch reference data on component mount
+  useEffect(() => {
+    fetchReferenceData()
+  }, [])
+
+  // Fonction pour récupérer les données de référence depuis l'API
+  const fetchReferenceData = async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      // Dans un cas réel, ces appels seraient remplacés par des appels API spécifiques
+      // Exemple: const departmentsResponse = await apiService.get(API_ENDPOINTS.REFERENCE.DEPARTMENTS)
+
+      // Pour l'instant, simulons ces appels avec des données statiques
+      // Mais dans une implémentation réelle, vous remplaceriez cela par des appels API
+
+      // Simuler un délai de chargement
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
+      setDepartments(["Informatique", "Ressources Humaines", "Finance", "Marketing", "Recherche"])
+      // Utiliser les catégories spécifiques demandées
+      setCategories(["Professeur Enseignement Supérieur", "Maitre de conférence", "Maitre de conférence qualifié"])
+    } catch (err) {
+      console.error("Erreur lors de la récupération des données de référence:", err)
+      setError("Impossible de charger les données de référence")
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Update available grades when category changes
+  useEffect(() => {
+    if (formData.categorie) {
+      fetchGradesForCategory(formData.categorie)
+    } else {
+      setAvailableGrades([])
+    }
+  }, [formData.categorie])
+
+  // Update available echelons when grade changes
+  useEffect(() => {
+    if (formData.categorie && formData.niveauGrade) {
+      fetchEchelonsForGrade(formData.categorie, formData.niveauGrade)
+    } else {
+      setAvailableEchelons([])
+    }
+  }, [formData.categorie, formData.niveauGrade])
+
+  // Fonction pour récupérer les grades pour une catégorie depuis l'API
+  const fetchGradesForCategory = async (category) => {
+    setLoading(true)
+    try {
+      // Dans une implémentation réelle, vous utiliseriez un endpoint API spécifique
+      // Exemple: const response = await apiService.get(API_ENDPOINTS.REFERENCE.GRADES_BY_CATEGORY(category))
+
+      // Pour l'instant, simulons cet appel avec la fonction utilitaire existante
+      // Mais dans une implémentation réelle, vous remplaceriez cela par un appel API
+
+      // Simuler un délai de chargement
+      await new Promise((resolve) => setTimeout(resolve, 300))
+
+      // Utiliser les grades spécifiques demandés (A, B, C, D) pour toutes les catégories
+      const grades = ["A", "B", "C", "D"]
+      setAvailableGrades(grades)
+
+      // Si le grade actuel n'est pas dans la liste des grades disponibles, le réinitialiser
+      if (formData.niveauGrade && !grades.includes(formData.niveauGrade)) {
+        setFormData({
+          ...formData,
+          niveauGrade: "",
+          echelon: "",
+        })
+      }
+    } catch (err) {
+      console.error("Erreur lors de la récupération des grades:", err)
+      setError("Impossible de charger les grades")
+      setAvailableGrades([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Fonction pour récupérer les échelons pour un grade depuis l'API
+  const fetchEchelonsForGrade = async (category, grade) => {
+    setLoading(true)
+    try {
+      // Dans une implémentation réelle, vous utiliseriez un endpoint API spécifique
+      // Exemple: const response = await apiService.get(API_ENDPOINTS.REFERENCE.ECHELONS_BY_GRADE(category, grade))
+
+      // Pour l'instant, simulons cet appel avec la fonction utilitaire existante
+      // Mais dans une implémentation réelle, vous remplaceriez cela par un appel API
+
+      // Simuler un délai de chargement
+      await new Promise((resolve) => setTimeout(resolve, 300))
+
+      // Simuler une réponse API
+      let echelons = []
+      if (category === "Enseignant-Chercheur") {
+        if (grade === "Professeur") {
+          echelons = [1, 2, 3, 4, 5]
+        } else if (grade === "Maître de conférences") {
+          echelons = [1, 2, 3, 4]
+        } else if (grade === "Assistant") {
+          echelons = [1, 2, 3]
+        }
+      } else if (category === "Administratif") {
+        if (grade === "Administrateur") {
+          echelons = [1, 2, 3, 4]
+        } else if (grade === "Secrétaire") {
+          echelons = [1, 2, 3]
+        } else if (grade === "Agent") {
+          echelons = [1, 2]
+        }
+      } else {
+        echelons = [1, 2, 3]
+      }
+
+      setAvailableEchelons(echelons)
+
+      // Si l'échelon actuel n'est pas dans la liste des échelons disponibles, le réinitialiser
+      if (formData.echelon && !echelons.includes(Number.parseInt(formData.echelon))) {
+        setFormData({
+          ...formData,
+          echelon: "",
+        })
+      }
+    } catch (err) {
+      console.error("Erreur lors de la récupération des échelons:", err)
+      setError("Impossible de charger les échelons")
+      setAvailableEchelons([])
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleTabChange = (event, newValue) => {
     setTabValue(newValue)
   }
 
+  const handleInputChange = (e) => {
+    const { name, value } = e.target
+    setFormData({
+      ...formData,
+      [name]: value,
+    })
+  }
+
+  const handleAddDiplome = () => {
+    if (newDiplome.trim()) {
+      setFormData({
+        ...formData,
+        diplomes: [...formData.diplomes, newDiplome.trim()],
+      })
+      setNewDiplome("")
+    }
+  }
+
+  const handleRemoveDiplome = (index) => {
+    const updatedDiplomes = [...formData.diplomes]
+    updatedDiplomes.splice(index, 1)
+    setFormData({
+      ...formData,
+      diplomes: updatedDiplomes,
+    })
+  }
+
+  const handleAddCompetence = () => {
+    if (newCompetence.trim()) {
+      setFormData({
+        ...formData,
+        competences: [...formData.competences, newCompetence.trim()],
+      })
+      setNewCompetence("")
+    }
+  }
+
+  const handleRemoveCompetence = (index) => {
+    const updatedCompetences = [...formData.competences]
+    updatedCompetences.splice(index, 1)
+    setFormData({
+      ...formData,
+      competences: updatedCompetences,
+    })
+  }
+
+  const handleSubmit = async () => {
+    setLoading(true)
+    setError(null)
+    setSuccess(false)
+
+    try {
+      // Map form data to backend format
+      const employeeData = EmployeeService.mapEmployeeDataForBackend(formData)
+
+      if (employee) {
+        // Update existing employee
+        await EmployeeService.updateEmployee(employeeData)
+        setSuccess("Employé mis à jour avec succès")
+      } else {
+        // Add new employee
+        await EmployeeService.addEmployee(employeeData)
+        setSuccess("Employé ajouté avec succès")
+      }
+
+      // Call onSave callback to refresh data in parent component
+      if (onSave) {
+        onSave()
+      }
+
+      // Close dialog after a short delay to show success message
+      setTimeout(() => {
+        onClose(true)
+      }, 1500)
+    } catch (err) {
+      console.error("Error saving employee:", err)
+      setError(err.message || "Une erreur s'est produite lors de l'enregistrement de l'employé")
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+    <Dialog open={open} onClose={() => onClose(false)} maxWidth="md" fullWidth>
       <DialogTitle
         sx={{
           display: "flex",
@@ -63,6 +363,18 @@ const EmployeeFormDialog = ({ open, onClose, employee }) => {
         )}
       </DialogTitle>
       <DialogContent sx={{ p: 0 }}>
+        {/* Error and success messages */}
+        {error && (
+          <Alert severity="error" sx={{ m: 2 }}>
+            {error}
+          </Alert>
+        )}
+        {success && (
+          <Alert severity="success" sx={{ m: 2 }}>
+            {success}
+          </Alert>
+        )}
+
         <Tabs
           value={tabValue}
           onChange={handleTabChange}
@@ -96,7 +408,9 @@ const EmployeeFormDialog = ({ open, onClose, employee }) => {
                   <TextField
                     fullWidth
                     label="Nom"
-                    defaultValue={employee?.nom || ""}
+                    name="nom"
+                    value={formData.nom}
+                    onChange={handleInputChange}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -110,7 +424,9 @@ const EmployeeFormDialog = ({ open, onClose, employee }) => {
                   <TextField
                     fullWidth
                     label="Prénom"
-                    defaultValue={employee?.prenom || ""}
+                    name="prenom"
+                    value={formData.prenom}
+                    onChange={handleInputChange}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -124,8 +440,10 @@ const EmployeeFormDialog = ({ open, onClose, employee }) => {
                   <TextField
                     fullWidth
                     label="Date de naissance"
+                    name="dateNaissance"
                     type="date"
-                    defaultValue={employee?.dateNaissance || ""}
+                    value={formData.dateNaissance}
+                    onChange={handleInputChange}
                     InputLabelProps={{ shrink: true }}
                     InputProps={{
                       startAdornment: (
@@ -140,8 +458,10 @@ const EmployeeFormDialog = ({ open, onClose, employee }) => {
                   <TextField
                     fullWidth
                     label="Email"
+                    name="email"
                     type="email"
-                    defaultValue={employee?.email || ""}
+                    value={formData.email}
+                    onChange={handleInputChange}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -155,7 +475,9 @@ const EmployeeFormDialog = ({ open, onClose, employee }) => {
                   <TextField
                     fullWidth
                     label="Téléphone"
-                    defaultValue={employee?.telephone || ""}
+                    name="telephone"
+                    value={formData.telephone}
+                    onChange={handleInputChange}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -169,7 +491,9 @@ const EmployeeFormDialog = ({ open, onClose, employee }) => {
                   <TextField
                     fullWidth
                     label="Adresse"
-                    defaultValue={employee?.adresse || ""}
+                    name="adresse"
+                    value={formData.adresse}
+                    onChange={handleInputChange}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -190,7 +514,9 @@ const EmployeeFormDialog = ({ open, onClose, employee }) => {
               <FormControl fullWidth>
                 <InputLabel>Département</InputLabel>
                 <Select
-                  defaultValue={employee?.departement || ""}
+                  name="departement"
+                  value={formData.departement}
+                  onChange={handleInputChange}
                   label="Département"
                   startAdornment={
                     <InputAdornment position="start">
@@ -198,6 +524,7 @@ const EmployeeFormDialog = ({ open, onClose, employee }) => {
                     </InputAdornment>
                   }
                 >
+                  <MenuItem value="">Sélectionner un département</MenuItem>
                   {departments.map((dept) => (
                     <MenuItem key={dept} value={dept}>
                       {dept}
@@ -210,7 +537,9 @@ const EmployeeFormDialog = ({ open, onClose, employee }) => {
               <TextField
                 fullWidth
                 label="Poste"
-                defaultValue={employee?.poste || ""}
+                name="poste"
+                value={formData.poste}
+                onChange={handleInputChange}
                 InputProps={{
                   startAdornment: (
                     <InputAdornment position="start">
@@ -224,8 +553,10 @@ const EmployeeFormDialog = ({ open, onClose, employee }) => {
               <TextField
                 fullWidth
                 label="Date de recrutement"
+                name="dateDeRecrutement"
                 type="date"
-                defaultValue={employee?.dateDeRecrutement || ""}
+                value={formData.dateDeRecrutement}
+                onChange={handleInputChange}
                 InputLabelProps={{ shrink: true }}
                 InputProps={{
                   startAdornment: (
@@ -240,8 +571,10 @@ const EmployeeFormDialog = ({ open, onClose, employee }) => {
               <TextField
                 fullWidth
                 label="Date de grade"
+                name="dateDeGrade"
                 type="date"
-                defaultValue={employee?.dateDeGrade || ""}
+                value={formData.dateDeGrade}
+                onChange={handleInputChange}
                 InputLabelProps={{ shrink: true }}
                 InputProps={{
                   startAdornment: (
@@ -256,8 +589,10 @@ const EmployeeFormDialog = ({ open, onClose, employee }) => {
               <TextField
                 fullWidth
                 label="Ancienneté échelon"
+                name="AncienneteEchelon"
                 type="date"
-                defaultValue={employee?.AncienneteEchelon || ""}
+                value={formData.AncienneteEchelon}
+                onChange={handleInputChange}
                 InputLabelProps={{ shrink: true }}
                 InputProps={{
                   startAdornment: (
@@ -270,9 +605,34 @@ const EmployeeFormDialog = ({ open, onClose, employee }) => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
+                <InputLabel>Catégorie</InputLabel>
+                <Select
+                  name="categorie"
+                  value={formData.categorie}
+                  onChange={handleInputChange}
+                  label="Catégorie"
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <School sx={{ color: alpha(primaryColor, 0.6) }} />
+                    </InputAdornment>
+                  }
+                >
+                  <MenuItem value="">Sélectionner une catégorie</MenuItem>
+                  {categories.map((cat) => (
+                    <MenuItem key={cat} value={cat}>
+                      {cat}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth disabled={!formData.categorie}>
                 <InputLabel>Niveau de Grade</InputLabel>
                 <Select
-                  defaultValue={employee?.niveauGrade || ""}
+                  name="niveauGrade"
+                  value={formData.niveauGrade}
+                  onChange={handleInputChange}
                   label="Niveau de Grade"
                   startAdornment={
                     <InputAdornment position="start">
@@ -280,7 +640,8 @@ const EmployeeFormDialog = ({ open, onClose, employee }) => {
                     </InputAdornment>
                   }
                 >
-                  {niveauxGrade.map((grade) => (
+                  <MenuItem value="">Sélectionner un grade</MenuItem>
+                  {availableGrades.map((grade) => (
                     <MenuItem key={grade} value={grade}>
                       {grade}
                     </MenuItem>
@@ -289,10 +650,12 @@ const EmployeeFormDialog = ({ open, onClose, employee }) => {
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
+              <FormControl fullWidth disabled={!formData.niveauGrade}>
                 <InputLabel>Échelon</InputLabel>
                 <Select
-                  defaultValue={employee?.echelon || ""}
+                  name="echelon"
+                  value={formData.echelon}
+                  onChange={handleInputChange}
                   label="Échelon"
                   startAdornment={
                     <InputAdornment position="start">
@@ -300,8 +663,9 @@ const EmployeeFormDialog = ({ open, onClose, employee }) => {
                     </InputAdornment>
                   }
                 >
-                  {echelons.map((echelon) => (
-                    <MenuItem key={echelon} value={echelon}>
+                  <MenuItem value="">Sélectionner un échelon</MenuItem>
+                  {availableEchelons.map((echelon) => (
+                    <MenuItem key={echelon} value={echelon.toString()}>
                       Échelon {echelon}
                     </MenuItem>
                   ))}
@@ -312,7 +676,9 @@ const EmployeeFormDialog = ({ open, onClose, employee }) => {
               <FormControl fullWidth>
                 <InputLabel>Statut</InputLabel>
                 <Select
-                  defaultValue={employee?.statut || ""}
+                  name="statut"
+                  value={formData.statut}
+                  onChange={handleInputChange}
                   label="Statut"
                   startAdornment={
                     <InputAdornment position="start">
@@ -326,6 +692,27 @@ const EmployeeFormDialog = ({ open, onClose, employee }) => {
                 </Select>
               </FormControl>
             </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel>Type de Contrat</InputLabel>
+                <Select
+                  name="typeContrat"
+                  value={formData.typeContrat}
+                  onChange={handleInputChange}
+                  label="Type de Contrat"
+                  startAdornment={
+                    <InputAdornment position="start">
+                      <Assignment sx={{ color: alpha(primaryColor, 0.6) }} />
+                    </InputAdornment>
+                  }
+                >
+                  <MenuItem value="CDI">CDI</MenuItem>
+                  <MenuItem value="CDD">CDD</MenuItem>
+                  <MenuItem value="Vacataire">Vacataire</MenuItem>
+                  <MenuItem value="Stage">Stage</MenuItem>
+                </Select>
+              </FormControl>
+            </Grid>
           </Grid>
         </TabPanel>
 
@@ -335,25 +722,29 @@ const EmployeeFormDialog = ({ open, onClose, employee }) => {
               <Typography variant="subtitle2" gutterBottom>
                 Diplômes
               </Typography>
-              <TextField
-                fullWidth
-                label="Diplômes (séparés par des virgules)"
-                defaultValue={employee?.diplomes?.join(", ") || ""}
-                multiline
-                rows={2}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <School sx={{ color: alpha(primaryColor, 0.6) }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
+              <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+                <TextField
+                  fullWidth
+                  label="Ajouter un diplôme"
+                  value={newDiplome}
+                  onChange={(e) => setNewDiplome(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <School sx={{ color: alpha(primaryColor, 0.6) }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                <Button variant="contained" color="primary" onClick={handleAddDiplome}>
+                  Ajouter
+                </Button>
+              </Box>
 
-              {employee?.diplomes && employee.diplomes.length > 0 && (
+              {formData.diplomes.length > 0 && (
                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 2 }}>
-                  {employee.diplomes.map((diplome, index) => (
-                    <Chip key={index} label={diplome} color="primary" onDelete={() => {}} />
+                  {formData.diplomes.map((diplome, index) => (
+                    <Chip key={index} label={diplome} color="primary" onDelete={() => handleRemoveDiplome(index)} />
                   ))}
                 </Box>
               )}
@@ -363,25 +754,34 @@ const EmployeeFormDialog = ({ open, onClose, employee }) => {
               <Typography variant="subtitle2" gutterBottom>
                 Compétences
               </Typography>
-              <TextField
-                fullWidth
-                label="Compétences (séparées par des virgules)"
-                defaultValue={employee?.competences?.join(", ") || ""}
-                multiline
-                rows={2}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Work sx={{ color: alpha(primaryColor, 0.6) }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
+              <Box sx={{ display: "flex", gap: 1, mb: 2 }}>
+                <TextField
+                  fullWidth
+                  label="Ajouter une compétence"
+                  value={newCompetence}
+                  onChange={(e) => setNewCompetence(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Work sx={{ color: alpha(primaryColor, 0.6) }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+                <Button variant="contained" color="primary" onClick={handleAddCompetence}>
+                  Ajouter
+                </Button>
+              </Box>
 
-              {employee?.competences && employee.competences.length > 0 && (
+              {formData.competences.length > 0 && (
                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mt: 2 }}>
-                  {employee.competences.map((competence, index) => (
-                    <Chip key={index} label={competence} color="secondary" onDelete={() => {}} />
+                  {formData.competences.map((competence, index) => (
+                    <Chip
+                      key={index}
+                      label={competence}
+                      color="secondary"
+                      onDelete={() => handleRemoveCompetence(index)}
+                    />
                   ))}
                 </Box>
               )}
@@ -396,10 +796,16 @@ const EmployeeFormDialog = ({ open, onClose, employee }) => {
         </TabPanel>
       </DialogContent>
       <DialogActions sx={{ p: 3, borderTop: `1px solid ${alpha(primaryColor, 0.1)}` }}>
-        <Button onClick={onClose} variant="outlined" color="secondary">
+        <Button onClick={() => onClose(false)} variant="outlined" color="secondary" disabled={loading}>
           Annuler
         </Button>
-        <Button variant="contained" color="primary" onClick={onClose}>
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleSubmit}
+          disabled={loading}
+          startIcon={loading ? <CircularProgress size={20} /> : null}
+        >
           {employee ? "Mettre à jour" : "Ajouter"}
         </Button>
       </DialogActions>

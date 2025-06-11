@@ -23,6 +23,8 @@ import {
   Badge,
   Collapse,
   useTheme,
+  CircularProgress,
+  Alert,
 } from "@mui/material"
 import {
   FilterList,
@@ -37,26 +39,57 @@ import {
   FilterAlt,
   FilterAltOff,
 } from "@mui/icons-material"
-import { departments, categories, postes, statuts } from "../../data/mockData"
 import { primaryColor, secondaryColor } from "../../utils/theme"
-import { getGradesForCategorie, getEchelonsForGrade } from "../../utils/employeeUtils"
 
 const FilterPanel = ({ onFilterChange, filters, onClearFilters }) => {
   const [expanded, setExpanded] = useState(true)
   const [availableGrades, setAvailableGrades] = useState([])
   const [availableEchelons, setAvailableEchelons] = useState([])
+  const [loading, setLoading] = useState(false)
+  const [departments, setDepartments] = useState([])
+  const [categories, setCategories] = useState([])
+  const [postes, setPostes] = useState([])
+  const [statuts, setStatuts] = useState([])
+  const [error, setError] = useState(null)
   const theme = useTheme()
+
+  // Fetch reference data on component mount
+  useEffect(() => {
+    fetchReferenceData()
+  }, [])
+
+  // Fonction pour récupérer les données de référence depuis l'API
+  const fetchReferenceData = async () => {
+    setLoading(true)
+    setError(null)
+
+    try {
+      // Dans un cas réel, ces appels seraient remplacés par des appels API spécifiques
+      // Exemple: const departmentsResponse = await apiService.get(API_ENDPOINTS.REFERENCE.DEPARTMENTS)
+
+      // Pour l'instant, simulons ces appels avec des données statiques
+      // Mais dans une implémentation réelle, vous remplaceriez cela par des appels API
+
+      // Simuler un délai de chargement
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
+      setDepartments(["Informatique", "Ressources Humaines", "Finance", "Marketing", "Recherche"])
+      // Utiliser les catégories spécifiques demandées
+      setCategories(["Professeur Enseignement Supérieur", "Maitre de conférence", "Maitre de conférence qualifié"])
+      setPostes(["Professeur", "Maître de conférences", "Assistant", "Technicien", "Agent administratif"])
+      setStatuts(["Actif", "En congé", "Suspendu", "Retraité"])
+    } catch (err) {
+      console.error("Erreur lors de la récupération des données de référence:", err)
+      setError("Impossible de charger les données de référence")
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // Mettre à jour les grades disponibles lorsque la catégorie change
   useEffect(() => {
     if (filters.categorie) {
-      const grades = getGradesForCategorie(filters.categorie)
-      setAvailableGrades(grades)
-
-      // Si le grade actuel n'est pas dans la liste des grades disponibles, le réinitialiser
-      if (filters.grade && !grades.includes(filters.grade)) {
-        onFilterChange({ ...filters, grade: "", echelon: "" })
-      }
+      fetchGradesForCategory(filters.categorie)
     } else {
       setAvailableGrades([])
       // Réinitialiser le grade et l'échelon si aucune catégorie n'est sélectionnée
@@ -64,18 +97,12 @@ const FilterPanel = ({ onFilterChange, filters, onClearFilters }) => {
         onFilterChange({ ...filters, grade: "", echelon: "" })
       }
     }
-  }, [filters.categorie, onFilterChange, filters])
+  }, [filters.categorie, filters])
 
   // Mettre à jour les échelons disponibles lorsque le grade change
   useEffect(() => {
     if (filters.categorie && filters.grade) {
-      const echelons = getEchelonsForGrade(filters.categorie, filters.grade)
-      setAvailableEchelons(echelons)
-
-      // Si l'échelon actuel n'est pas dans la liste des échelons disponibles, le réinitialiser
-      if (filters.echelon && !echelons.includes(Number.parseInt(filters.echelon))) {
-        onFilterChange({ ...filters, echelon: "" })
-      }
+      fetchEchelonsForGrade(filters.categorie, filters.grade)
     } else {
       setAvailableEchelons([])
       // Réinitialiser l'échelon si aucun grade n'est sélectionné
@@ -83,7 +110,87 @@ const FilterPanel = ({ onFilterChange, filters, onClearFilters }) => {
         onFilterChange({ ...filters, echelon: "" })
       }
     }
-  }, [filters.categorie, filters.grade, onFilterChange, filters])
+  }, [filters.categorie, filters.grade, filters])
+
+  // Fonction pour récupérer les grades pour une catégorie depuis l'API
+  const fetchGradesForCategory = async (category) => {
+    setLoading(true)
+    try {
+      // Dans une implémentation réelle, vous utiliseriez un endpoint API spécifique
+      // Exemple: const response = await apiService.get(API_ENDPOINTS.REFERENCE.GRADES_BY_CATEGORY(category))
+
+      // Pour l'instant, simulons cet appel avec la fonction utilitaire existante
+      // Mais dans une implémentation réelle, vous remplaceriez cela par un appel API
+
+      // Simuler un délai de chargement
+      await new Promise((resolve) => setTimeout(resolve, 300))
+
+      // Utiliser les grades spécifiques demandés (A, B, C, D) pour toutes les catégories
+      const grades = ["A", "B", "C", "D"]
+      setAvailableGrades(grades)
+
+      // Si le grade actuel n'est pas dans la liste des grades disponibles, le réinitialiser
+      if (filters.grade && !grades.includes(filters.grade)) {
+        onFilterChange({ ...filters, grade: "", echelon: "" })
+      }
+    } catch (err) {
+      console.error("Erreur lors de la récupération des grades:", err)
+      setError("Impossible de charger les grades")
+      setAvailableGrades([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  // Fonction pour récupérer les échelons pour un grade depuis l'API
+  const fetchEchelonsForGrade = async (category, grade) => {
+    setLoading(true)
+    try {
+      // Dans une implémentation réelle, vous utiliseriez un endpoint API spécifique
+      // Exemple: const response = await apiService.get(API_ENDPOINTS.REFERENCE.ECHELONS_BY_GRADE(category, grade))
+
+      // Pour l'instant, simulons cet appel avec la fonction utilitaire existante
+      // Mais dans une implémentation réelle, vous remplaceriez cela par un appel API
+
+      // Simuler un délai de chargement
+      await new Promise((resolve) => setTimeout(resolve, 300))
+
+      // Simuler une réponse API
+      let echelons = []
+      if (category === "Enseignant-Chercheur") {
+        if (grade === "Professeur") {
+          echelons = [1, 2, 3, 4, 5]
+        } else if (grade === "Maître de conférences") {
+          echelons = [1, 2, 3, 4]
+        } else if (grade === "Assistant") {
+          echelons = [1, 2, 3]
+        }
+      } else if (category === "Administratif") {
+        if (grade === "Administrateur") {
+          echelons = [1, 2, 3, 4]
+        } else if (grade === "Secrétaire") {
+          echelons = [1, 2, 3]
+        } else if (grade === "Agent") {
+          echelons = [1, 2]
+        }
+      } else {
+        echelons = [1, 2, 3]
+      }
+
+      setAvailableEchelons(echelons)
+
+      // Si l'échelon actuel n'est pas dans la liste des échelons disponibles, le réinitialiser
+      if (filters.echelon && !echelons.includes(Number.parseInt(filters.echelon))) {
+        onFilterChange({ ...filters, echelon: "" })
+      }
+    } catch (err) {
+      console.error("Erreur lors de la récupération des échelons:", err)
+      setError("Impossible de charger les échelons")
+      setAvailableEchelons([])
+    } finally {
+      setLoading(false)
+    }
+  }
 
   const handleChange = (event) => {
     const { name, value } = event.target
@@ -123,6 +230,13 @@ const FilterPanel = ({ onFilterChange, filters, onClearFilters }) => {
         background: generateGradient(primaryColor, 0.02),
       }}
     >
+      {/* Afficher les erreurs s'il y en a */}
+      {error && (
+        <Alert severity="error" sx={{ m: 2 }}>
+          {error}
+        </Alert>
+      )}
+
       {/* Barre de recherche toujours visible */}
       <Box
         sx={{
@@ -342,6 +456,7 @@ const FilterPanel = ({ onFilterChange, filters, onClearFilters }) => {
                           },
                         },
                       }}
+                      disabled={loading}
                     >
                       <MenuItem value="">Tous les départements</MenuItem>
                       {departments.map((dept) => (
@@ -373,6 +488,7 @@ const FilterPanel = ({ onFilterChange, filters, onClearFilters }) => {
                           },
                         },
                       }}
+                      disabled={loading}
                     >
                       <MenuItem value="">Tous les postes</MenuItem>
                       {postes.map((poste) => (
@@ -437,6 +553,7 @@ const FilterPanel = ({ onFilterChange, filters, onClearFilters }) => {
                           },
                         },
                       }}
+                      disabled={loading}
                     >
                       <MenuItem value="">Tous les statuts</MenuItem>
                       {statuts.map((statut) => (
@@ -510,6 +627,7 @@ const FilterPanel = ({ onFilterChange, filters, onClearFilters }) => {
                           },
                         },
                       }}
+                      disabled={loading}
                     >
                       <MenuItem value="">Toutes les catégories</MenuItem>
                       {categories.map((categorie) => (
@@ -522,7 +640,7 @@ const FilterPanel = ({ onFilterChange, filters, onClearFilters }) => {
 
                   <KeyboardArrowRight sx={{ display: { xs: "none", sm: "block" }, color: alpha("#000", 0.3) }} />
 
-                  <FormControl fullWidth size="small" disabled={!filters.categorie}>
+                  <FormControl fullWidth size="small" disabled={!filters.categorie || loading}>
                     <InputLabel id="grade-select-label">Niveau de Grade</InputLabel>
                     <Select
                       labelId="grade-select-label"
@@ -532,7 +650,11 @@ const FilterPanel = ({ onFilterChange, filters, onClearFilters }) => {
                       label="Niveau de Grade"
                       startAdornment={
                         <InputAdornment position="start">
-                          <GradeIcon sx={{ color: alpha(theme.palette.success.main, 0.7), fontSize: "1.2rem" }} />
+                          {loading ? (
+                            <CircularProgress size={20} />
+                          ) : (
+                            <GradeIcon sx={{ color: alpha(theme.palette.success.main, 0.7), fontSize: "1.2rem" }} />
+                          )}
                         </InputAdornment>
                       }
                       MenuProps={{
@@ -555,7 +677,7 @@ const FilterPanel = ({ onFilterChange, filters, onClearFilters }) => {
 
                   <KeyboardArrowRight sx={{ display: { xs: "none", sm: "block" }, color: alpha("#000", 0.3) }} />
 
-                  <FormControl fullWidth size="small" disabled={!filters.grade}>
+                  <FormControl fullWidth size="small" disabled={!filters.grade || loading}>
                     <InputLabel id="echelon-select-label">Échelon</InputLabel>
                     <Select
                       labelId="echelon-select-label"
@@ -565,7 +687,11 @@ const FilterPanel = ({ onFilterChange, filters, onClearFilters }) => {
                       label="Échelon"
                       startAdornment={
                         <InputAdornment position="start">
-                          <Stairs sx={{ color: alpha(theme.palette.success.main, 0.7), fontSize: "1.2rem" }} />
+                          {loading ? (
+                            <CircularProgress size={20} />
+                          ) : (
+                            <Stairs sx={{ color: alpha(theme.palette.success.main, 0.7), fontSize: "1.2rem" }} />
+                          )}
                         </InputAdornment>
                       }
                       MenuProps={{
